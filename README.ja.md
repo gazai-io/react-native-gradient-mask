@@ -31,7 +31,16 @@
 ## デモ
 
 <p align="center">
-  <img src="./images/demo.mov" alt="Demo" width="300" />
+  <table>
+    <tr>
+      <td align="center"><b>iOS</b></td>
+      <td align="center"><b>Android</b></td>
+    </tr>
+    <tr>
+      <td><img src="./images/ios  Demo Video.webm" alt="iOS デモ" width="280" /></td>
+      <td><img src="./images/android.mp4" alt="Android デモ" width="280" /></td>
+    </tr>
+  </table>
 </p>
 
 ## 特徴
