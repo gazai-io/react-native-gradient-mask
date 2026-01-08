@@ -37,10 +37,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CS6/react-native-gradient-mask.git"
+    "url": "git+https://github.com/gazai-io/react-native-gradient-mask.git"
   },
   "bugs": {
-    "url": "https://github.com/CS6/react-native-gradient-mask/issues"
+    "url": "https://github.com/gazai-io/react-native-gradient-mask/issues"
   },
   "author": {
     "name": "DaYuan Lin",
@@ -48,7 +48,7 @@
     "url": "https://github.com/CS6"
   },
   "license": "MIT",
-  "homepage": "https://github.com/CS6/react-native-gradient-mask#readme",
+  "homepage": "https://github.com/gazai-io/react-native-gradient-mask#readme",
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/CS6"
