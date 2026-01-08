@@ -18,7 +18,7 @@ export type AnimatedGradientMaskViewProps = Omit<
 };
 
 /**
- * 將 processColor 處理過的顏色值轉回 rgba 字串
+ * Convert processColor output back to rgba string
  */
 function colorToRgba(color: number | null): string {
   if (color === null || color === undefined) {
@@ -35,7 +35,7 @@ function colorToRgba(color: number | null): string {
 }
 
 /**
- * 根據 direction 取得 CSS linear-gradient 的方向
+ * Get CSS linear-gradient direction based on direction prop
  */
 function getGradientDirection(direction: GradientMaskViewProps['direction']): string {
   switch (direction) {
@@ -53,7 +53,7 @@ function getGradientDirection(direction: GradientMaskViewProps['direction']): st
 }
 
 /**
- * 建立 CSS linear-gradient 字串
+ * Build CSS linear-gradient string
  */
 function buildGradientString(
   colors: (number | null)[],
@@ -72,7 +72,7 @@ function buildGradientString(
 }
 
 /**
- * 根據 maskOpacity 調整顏色的 alpha 值
+ * Adjust color alpha values based on maskOpacity
  */
 function adjustColorsForOpacity(
   colors: (number | null)[],
@@ -96,8 +96,8 @@ function adjustColorsForOpacity(
 }
 
 /**
- * AnimatedGradientMaskView - Web 實作
- * 使用 CSS mask-image 搭配 useAnimatedReaction 監聽 SharedValue 變化
+ * AnimatedGradientMaskView - Web implementation
+ * Uses CSS mask-image with useAnimatedReaction to listen for SharedValue changes
  */
 export default function AnimatedGradientMaskView(props: AnimatedGradientMaskViewProps) {
   const {
@@ -111,7 +111,7 @@ export default function AnimatedGradientMaskView(props: AnimatedGradientMaskView
 
   const [currentOpacity, setCurrentOpacity] = React.useState(maskOpacity.value);
 
-  // 監聽 SharedValue 變化並更新 state
+  // Listen for SharedValue changes and update state
   useAnimatedReaction(
     () => maskOpacity.value,
     (value) => {

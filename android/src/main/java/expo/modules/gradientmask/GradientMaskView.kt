@@ -7,50 +7,50 @@ import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
 
 /**
- * GradientMaskView - 原生漸層透明遮罩
+ * GradientMaskView - Native gradient transparency mask
  *
- * 使用 Bitmap 作為 mask，配合 setLayerType + PorterDuff.Mode.DST_IN
+ * Uses Bitmap as mask with setLayerType + PorterDuff.Mode.DST_IN
  *
- * 顏色語意（與 iOS CAGradientLayer mask 一致）：
- * - 顏色的 alpha 值決定該區域內容的可見度
- * - alpha = 0 → 內容透明（看到背景）
- * - alpha = 255 → 內容不透明（看到內容）
+ * Color semantics (consistent with iOS CAGradientLayer mask):
+ * - Color's alpha value determines content visibility in that area
+ * - alpha = 0 → content transparent (see background)
+ * - alpha = 255 → content opaque (see content)
  *
- * maskOpacity 控制漸層 mask 效果的顯示程度：
- * - maskOpacity = 0 → 無漸層效果，內容完全可見（全部 alpha=255）
- * - maskOpacity = 1 → 完整漸層效果（使用原始 alpha）
+ * maskOpacity controls gradient mask effect intensity:
+ * - maskOpacity = 0 → no gradient effect, content fully visible (all alpha=255)
+ * - maskOpacity = 1 → full gradient effect (use original alpha)
  *
- * 效能優化：
- * - 基礎漸層 bitmap (baseMaskBitmap) 只在 colors/locations/direction/size 變化時重建
- * - maskOpacity 變化時只使用 ColorMatrix 調整 alpha，不重建 bitmap
+ * Performance optimization:
+ * - Base gradient bitmap (baseMaskBitmap) only rebuilt when colors/locations/direction/size change
+ * - maskOpacity changes only use ColorMatrix to adjust alpha, no bitmap rebuild
  */
 class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
 
-    // Gradient mask 的參數
+    // Gradient mask parameters
     private var colors: IntArray? = null
     private var locations: FloatArray? = null
     private var direction: String = "top"
 
-    // maskOpacity: 0 = 無漸層效果, 1 = 完整漸層效果
+    // maskOpacity: 0 = no gradient effect, 1 = full gradient effect
     private var maskOpacity: Float = 1f
 
-    // 基礎漸層 bitmap（完整漸層效果，maskOpacity=1 時使用的原始漸層）
+    // Base gradient bitmap (full gradient effect, original gradient used when maskOpacity=1)
     private var baseMaskBitmap: Bitmap? = null
-    // 是否需要重建基礎 bitmap（只有 colors/locations/direction/size 變化時才需要）
+    // Whether base bitmap needs rebuild (only when colors/locations/direction/size change)
     private var baseBitmapInvalidated = true
 
-    // 繪製用的 Paint
+    // Paint for drawing
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val porterDuffXferMode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
 
-    // 用於調整 mask alpha 的 ColorMatrix
+    // ColorMatrix for adjusting mask alpha
     private val colorMatrix = ColorMatrix()
     private val colorMatrixFilter = ColorMatrixColorFilter(colorMatrix)
 
     init {
-        // 確保背景是透明的
+        // Ensure background is transparent
         setBackgroundColor(Color.TRANSPARENT)
-        // 始終使用 SOFTWARE 模式，避免動態切換層模式造成的黑色閃爍
+        // Always use SOFTWARE mode to avoid black flash when dynamically switching layer modes
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 
         android.util.Log.d("GradientMask", "=== GradientMaskView init ===")
@@ -80,8 +80,8 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
         val newOpacity = opacity.toFloat().coerceIn(0f, 1f)
         if (newOpacity != maskOpacity) {
             maskOpacity = newOpacity
-            // 只需要 invalidate，不需要重建 bitmap
-            // dispatchDraw 時會使用 ColorMatrix 來調整 alpha
+            // Only need to invalidate, no bitmap rebuild needed
+            // dispatchDraw will use ColorMatrix to adjust alpha
             invalidate()
         }
     }
@@ -106,26 +106,26 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     // MARK: - Drawing
 
     override fun dispatchDraw(canvas: Canvas) {
-        // 檢查尺寸是否有效
+        // Check if dimensions are valid
         if (width <= 0 || height <= 0) {
             super.dispatchDraw(canvas)
             return
         }
 
-        // 如果基礎 bitmap 需要更新，重新創建
+        // If base bitmap needs update, recreate it
         if (baseBitmapInvalidated) {
             updateBaseMaskBitmap()
             baseBitmapInvalidated = false
         }
 
         val bitmap = baseMaskBitmap
-        // 如果沒有 mask bitmap 或 maskOpacity=0，直接繪製子元件（無 mask 效果）
+        // If no mask bitmap or maskOpacity=0, draw children directly (no mask effect)
         if (bitmap == null || maskOpacity <= 0f) {
             super.dispatchDraw(canvas)
             return
         }
 
-        // 使用 saveLayer 創建離屏緩衝區
+        // Use saveLayer to create offscreen buffer
         val saveCount = canvas.saveLayer(
             0f, 0f,
             width.toFloat(), height.toFloat(),
@@ -133,24 +133,24 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
         )
 
         try {
-            // 先繪製所有子元件到離屏緩衝區
+            // First draw all children to offscreen buffer
             super.dispatchDraw(canvas)
 
-            // 應用 mask（使用 DST_IN 模式）
-            // 使用 ColorMatrix 來調整 alpha，實現 maskOpacity 效果
-            // 這樣就不需要每次 maskOpacity 變化都重建 bitmap
+            // Apply mask (using DST_IN mode)
+            // Use ColorMatrix to adjust alpha, implementing maskOpacity effect
+            // This way we don't need to rebuild bitmap every time maskOpacity changes
             paint.xfermode = porterDuffXferMode
             paint.colorFilter = if (maskOpacity < 1f) {
-                // 使用 ColorMatrix 來混合原始 alpha 和完全不透明
-                // maskOpacity = 0 → 所有像素的 alpha 變為 255（完全可見）
-                // maskOpacity = 1 → 使用原始 alpha
+                // Use ColorMatrix to blend original alpha with fully opaque
+                // maskOpacity = 0 → all pixels' alpha becomes 255 (fully visible)
+                // maskOpacity = 1 → use original alpha
                 //
-                // ColorMatrix 的 alpha 行：[0, 0, 0, scale, translate]
-                // 結果 alpha = originalAlpha * scale + translate
+                // ColorMatrix alpha row: [0, 0, 0, scale, translate]
+                // Result alpha = originalAlpha * scale + translate
                 //
-                // 我們想要：resultAlpha = 255 + (originalAlpha - 255) * maskOpacity
-                //         = 255 * (1 - maskOpacity) + originalAlpha * maskOpacity
-                // 所以：scale = maskOpacity, translate = 255 * (1 - maskOpacity)
+                // We want: resultAlpha = 255 + (originalAlpha - 255) * maskOpacity
+                //        = 255 * (1 - maskOpacity) + originalAlpha * maskOpacity
+                // So: scale = maskOpacity, translate = 255 * (1 - maskOpacity)
                 colorMatrix.set(floatArrayOf(
                     1f, 0f, 0f, 0f, 0f,           // R
                     0f, 1f, 0f, 0f, 0f,           // G
@@ -170,24 +170,24 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     }
 
     /**
-     * 更新基礎漸層 bitmap
-     * 這個 bitmap 包含原始漸層效果（maskOpacity = 1 時的效果）
-     * maskOpacity 的調整在 dispatchDraw 時透過 ColorMatrix 實現
+     * Update base gradient bitmap
+     * This bitmap contains original gradient effect (effect when maskOpacity = 1)
+     * maskOpacity adjustment is implemented via ColorMatrix in dispatchDraw
      */
     private fun updateBaseMaskBitmap() {
         if (width <= 0 || height <= 0) return
 
-        // 回收舊的 bitmap
+        // Recycle old bitmap
         baseMaskBitmap?.recycle()
 
-        // 創建新的 mask bitmap
+        // Create new mask bitmap
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val bitmapCanvas = Canvas(bitmap)
 
         val currentColors = colors
         val currentLocations = locations
 
-        // 如果沒有 colors/locations，創建全白 mask（內容完全可見）
+        // If no colors/locations, create white mask (content fully visible)
         if (currentColors == null || currentLocations == null ||
             currentColors.size != currentLocations.size ||
             currentColors.isEmpty()) {
@@ -196,14 +196,14 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
             return
         }
 
-        // 轉換顏色為白色 + 原始 alpha（mask 只需要 alpha 通道）
+        // Convert colors to white + original alpha (mask only needs alpha channel)
         val maskColors = IntArray(currentColors.size) { i ->
             val originalColor = currentColors[i]
             val originalAlpha = Color.alpha(originalColor)
             Color.argb(originalAlpha, 255, 255, 255)
         }
 
-        // 建立 gradient shader
+        // Create gradient shader
         val (startX, startY, endX, endY) = getGradientCoordinates()
         val shader = LinearGradient(
             startX, startY, endX, endY,
@@ -212,7 +212,7 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
             Shader.TileMode.CLAMP
         )
 
-        // 繪製漸層到 bitmap
+        // Draw gradient to bitmap
         val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             this.shader = shader
         }

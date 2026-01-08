@@ -4,15 +4,15 @@ import { View, StyleSheet } from 'react-native';
 import { GradientMaskViewProps } from './GradientMask.types';
 
 /**
- * 將 processColor 處理過的顏色值轉回 rgba 字串
+ * Convert processColor output back to rgba string
  */
 function colorToRgba(color: number | null): string {
   if (color === null || color === undefined) {
     return 'rgba(0, 0, 0, 0)';
   }
 
-  // processColor 在 web 上回傳的格式是 AARRGGBB (32-bit integer)
-  const intValue = color >>> 0; // 確保是 unsigned
+  // processColor returns AARRGGBB format on web (32-bit integer)
+  const intValue = color >>> 0; // Ensure unsigned
   const a = ((intValue >> 24) & 0xff) / 255;
   const r = (intValue >> 16) & 0xff;
   const g = (intValue >> 8) & 0xff;
@@ -22,25 +22,25 @@ function colorToRgba(color: number | null): string {
 }
 
 /**
- * 根據 direction 取得 CSS linear-gradient 的方向
+ * Get CSS linear-gradient direction based on direction prop
  */
 function getGradientDirection(direction: GradientMaskViewProps['direction']): string {
   switch (direction) {
     case 'top':
-      return 'to bottom'; // 頂部透明 → 底部不透明
+      return 'to bottom'; // Top transparent → bottom opaque
     case 'bottom':
-      return 'to top'; // 底部透明 → 頂部不透明
+      return 'to top'; // Bottom transparent → top opaque
     case 'left':
-      return 'to right'; // 左側透明 → 右側不透明
+      return 'to right'; // Left transparent → right opaque
     case 'right':
-      return 'to left'; // 右側透明 → 左側不透明
+      return 'to left'; // Right transparent → left opaque
     default:
       return 'to bottom';
   }
 }
 
 /**
- * 建立 CSS linear-gradient 字串
+ * Build CSS linear-gradient string
  */
 function buildGradientString(
   colors: (number | null)[],
@@ -59,9 +59,9 @@ function buildGradientString(
 }
 
 /**
- * 根據 maskOpacity 調整顏色的 alpha 值
- * maskOpacity = 0 時，所有顏色變為完全不透明（無遮罩效果）
- * maskOpacity = 1 時，保持原本的 alpha 值
+ * Adjust color alpha values based on maskOpacity
+ * maskOpacity = 0: all colors become fully opaque (no mask effect)
+ * maskOpacity = 1: keep original alpha values
  */
 function adjustColorsForOpacity(
   colors: (number | null)[],
@@ -69,7 +69,7 @@ function adjustColorsForOpacity(
 ): (number | null)[] {
   if (maskOpacity >= 1) return colors;
   if (maskOpacity <= 0) {
-    // 全部變成不透明黑色，表示內容完全可見
+    // All become opaque black, meaning content is fully visible
     return colors.map(() => 0xff000000);
   }
 
@@ -80,15 +80,15 @@ function adjustColorsForOpacity(
     const r = (intValue >> 16) & 0xff;
     const g = (intValue >> 8) & 0xff;
     const b = intValue & 0xff;
-    // 根據 maskOpacity 調整 alpha：當 maskOpacity = 0 時 alpha 趨近於 1（完全可見）
+    // Adjust alpha based on maskOpacity: when maskOpacity = 0, alpha approaches 1 (fully visible)
     const adjustedAlpha = a + (1 - a) * (1 - maskOpacity);
     return ((Math.round(adjustedAlpha * 255) << 24) | (r << 16) | (g << 8) | b) >>> 0;
   });
 }
 
 /**
- * GradientMaskView - Web 實作
- * 使用 CSS mask-image 搭配 linear-gradient 實現漸層遮罩效果
+ * GradientMaskView - Web implementation
+ * Uses CSS mask-image with linear-gradient to achieve gradient mask effect
  */
 export default function GradientMaskView(props: GradientMaskViewProps) {
   const {
@@ -102,7 +102,7 @@ export default function GradientMaskView(props: GradientMaskViewProps) {
 
   const maskStyle = React.useMemo(() => {
     if (maskOpacity <= 0) {
-      // 無遮罩效果
+      // No mask effect
       return {};
     }
 

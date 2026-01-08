@@ -24,13 +24,13 @@ export type AnimatedGradientMaskViewProps = Omit<
 };
 
 /**
- * AnimatedGradientMaskView - 支援 Reanimated SharedValue 動畫的漸層遮罩元件
+ * AnimatedGradientMaskView - Gradient mask component with Reanimated SharedValue animation support
  *
- * 使用方式：
+ * Usage:
  * ```tsx
  * const maskOpacity = useSharedValue(0);
  *
- * // 動畫顯示
+ * // Animate to show
  * maskOpacity.value = withTiming(1, {
  *   duration: 600,
  *   easing: Easing.in(Easing.quad),
