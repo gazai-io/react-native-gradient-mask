@@ -44,3 +44,7 @@ iOS 在原生 `hitTest` 排除範圍外的新觸控；Android 同時處理 RN re
 本機 npm 登入 401，因此使用已有成功紀錄的 GitHub OIDC 發布流程，不將 token 放入原始碼。打包會核對 Swift、Kotlin、Gradle、podspec、screen-height helper、JS 及型別檔案。
 
 新觸控/比例測試使用 iOS 26.5 與 Android API 35 模擬器。**實體裝置效能比較、螢幕旋轉/摺疊/多視窗的實機整合、產品鍵盤整合仍未驗證。** 既有 UI-thread/GPU 比較限制見 [原驗收表](viewport-checklist.md)，不宣稱所有裝置無效能問題。Web 新 viewport API 不在本次支援範圍；觸控限制也不改變 VoiceOver/TalkBack 的 focus 篩選。
+
+## 發布流程修正：0.2.1
+
+`v0.2.0` 的 GitHub run 33998638055 在安裝 npm 階段失敗：npm@latest 已為 12.0.2，需要 Node 24.15.0 以上，不相容固定的 24.13.0。尚未建立 GitHub release 或發布 npm。保留原標籤，固定 npm 11.6.2，改以 0.2.1 發布；套件功能程式碼不變，沿用以上原生驗證。

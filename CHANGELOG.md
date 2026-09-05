@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Pin publishing npm to 11.6.2 for Node 24.13.0 compatibility. The 0.2.0 workflow failed before publication because npm 12 requires a newer Node runtime.
+- First npm release of the 0.2.0 features below; runtime implementation is unchanged.
+
 ## 0.2.0
 
 - Add opt-in native viewport boundaries with independent animated feather lengths; preserve the existing gradient components.
