@@ -3,14 +3,14 @@ import * as React from 'react';
 import type { GradientMaskViewProps } from './GradientMask.types';
 import { nativeMaskProps, normalizeGradient } from './maskGeometry';
 
-const NativeView: React.ComponentType<GradientMaskViewProps & ReturnType<typeof nativeMaskProps>> =
+const NativeView: React.ComponentType<GradientMaskViewProps & { maskDirection?: string } & ReturnType<typeof nativeMaskProps>> =
   requireNativeView('GradientMask');
 
 export default function GradientMaskView(props: GradientMaskViewProps) {
-  const { colors, locations, maskOpacity, topMaskHeight, bottomMaskHeight,
+  const { colors, locations, direction, maskOpacity, topMaskHeight, bottomMaskHeight,
     topMaskEnabled, bottomMaskEnabled, topMaskOpacity, bottomMaskOpacity, ...viewProps } = props;
   const gradient = React.useMemo(() => normalizeGradient(colors, locations), [colors, locations]);
-  return <NativeView {...viewProps} {...gradient} {...nativeMaskProps({
+  return <NativeView {...viewProps} maskDirection={direction} {...gradient} {...nativeMaskProps({
     maskOpacity, topMaskHeight, bottomMaskHeight, topMaskEnabled, bottomMaskEnabled,
     topMaskOpacity, bottomMaskOpacity,
   })} />;

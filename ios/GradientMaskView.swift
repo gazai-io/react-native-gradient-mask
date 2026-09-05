@@ -124,6 +124,7 @@ class GradientMaskView: ExpoView {
         bottomSolid.isHidden = !edgeMode || bottom <= 0
         middleSolid.isHidden = !edgeMode
 
+        NSLog("MASK_LAYER root=%@ legacy=%@ opacity=%f hidden=%d", maskRoot.description, legacyGradient.description, legacySolid.opacity, legacyGradient.isHidden ? 1 : 0)
         if edgeMode {
             let topFrame = CGRect(x: 0, y: CGFloat(start), width: bounds.width, height: CGFloat(top))
             let bottomFrame = CGRect(x: 0, y: CGFloat(end - bottom), width: bounds.width, height: CGFloat(bottom))

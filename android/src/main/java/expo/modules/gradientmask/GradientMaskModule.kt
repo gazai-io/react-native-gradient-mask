@@ -20,7 +20,7 @@ class GradientMaskModule : Module() {
             }
 
             // direction: "top" | "bottom" | "left" | "right"
-            Prop("direction") { view: GradientMaskView, direction: String? ->
+            Prop("maskDirection") { view: GradientMaskView, direction: String? ->
                 view.setDirection(direction ?: "top")
             }
 

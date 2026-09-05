@@ -31,7 +31,7 @@ export default function MaskGeometryScene() {
       <View style={styles.white} />
     </AnimatedViewportMaskView>
     <Text style={styles.label}>Legacy: direction bottom, full-height fade</Text>
-    <GradientMaskView testID="legacy-geometry" style={{ width: 240, height: 100 }} direction="bottom">
+    <GradientMaskView testID="legacy-geometry" style={{ width: 240, height: 100, backgroundColor: 'white' }} direction="bottom">
       <View style={styles.white} />
     </GradientMaskView>
   </View>;
