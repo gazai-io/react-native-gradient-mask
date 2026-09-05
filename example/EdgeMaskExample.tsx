@@ -53,11 +53,13 @@ export default function EdgeMaskExample({ benchmark = false }: { benchmark?: boo
     console.log('MASK_BENCHMARK_RESULT ' + JSON.stringify(complete));
     setReports(previous => [...previous, complete]);
   }, []);
+  const origin = useSharedValue(0);
   const stats = useSharedValue({ phase: -1, frames: 0, total: 0, max: 0, over25: 0, hist: Array<number>(251).fill(0) });
 
   useFrameCallback(frame => {
     if (!benchmark) return;
-    const elapsed = frame.timeSinceFirstFrame;
+    if (origin.value === 0) origin.value = frame.timestamp;
+    const elapsed = frame.timestamp - origin.value;
     if (elapsed < 3000) return; // warmup
     const phase = Math.min(PHASES.length, Math.floor((elapsed - 3000) / 5000));
     const s = stats.value;
