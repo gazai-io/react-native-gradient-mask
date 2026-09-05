@@ -63,11 +63,15 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "@types/react": "~19.1.0",
-    "expo": "^54.0.27",
-    "expo-module-scripts": "^5.0.8",
-    "react-native": "0.81.5",
-    "react-native-reanimated": "^3.0.0"
+    "@types/react": "19.2.14",
+    "expo": "56.0.17",
+    "expo-module-scripts": "56.0.3",
+    "react-native": "0.85.3",
+    "react-native-reanimated": "4.3.1",
+    "react": "19.2.3",
+    "react-native-worklets": "0.8.3",
+    "typescript": "6.0.3",
+    "expo-modules-jsi": "56.0.12"
   },
   "peerDependencies": {
     "expo": "*",
@@ -79,5 +83,8 @@
     "react-native-reanimated": {
       "optional": true
     }
+  },
+  "overrides": {
+    "expo-modules-core": "56.0.22"
   }
 }

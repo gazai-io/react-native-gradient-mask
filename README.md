@@ -324,6 +324,13 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 
 ---
 
+## Example validation
+
+The primary example environment matches the app: Expo 56.0.17 / React Native 0.85.3.
+See the [upgrade and validation record](docs/validation/expo-56-upgrade.md) and the
+[original Expo 54 build baseline](docs/validation/expo-54-baseline.md) (Traditional Chinese).
+Environment upgrades and functional changes are recorded separately.
+
 ## Built for Anini
 
 This library was originally developed for [**Anini**](https://play.google.com/store/apps/details?id=com.gazai.aichat) - an AI chat companion app that delivers smooth, native-quality user experiences.

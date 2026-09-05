@@ -336,6 +336,12 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 
 ---
 
+## Example 驗證環境
+
+主要 Example 已對齊 App：Expo 56.0.17 / React Native 0.85.3。
+重現步驟見[升級與驗證紀錄](docs/validation/expo-56-upgrade.md)，
+原版結果見 [Expo 54 建置基準](docs/validation/expo-54-baseline.md)。環境升級與功能修改分開記錄。
+
 ## 贊助
 
 本專案由 [**GAZAI**](https://gazai.io/EN/services) 贊助 — 打造創新的 AI 驅動應用程式。

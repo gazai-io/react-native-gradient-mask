@@ -336,6 +336,13 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 
 ---
 
+## Example の検証環境
+
+主要な Example 環境はアプリと同じ Expo 56.0.17 / React Native 0.85.3 です。
+[アップグレードと検証記録](docs/validation/expo-56-upgrade.md)および
+[Expo 54 のビルド基準](docs/validation/expo-54-baseline.md)（繁体字中国語）を参照してください。
+環境の更新と機能の変更は別々に記録します。
+
 ## スポンサー
 
 このプロジェクトは [**GAZAI**](https://gazai.io/EN/services) がスポンサーです — 革新的な AI 駆動アプリケーションを構築しています。
