@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import Animated, { useAnimatedProps, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { AnimatedViewportMaskView, type MaskLength } from 'react-native-gradient-mask';
 const AnimatedInput = Animated.createAnimatedComponent(TextInput);
@@ -9,8 +9,10 @@ const initial = Array.from({length: 200}, (_, i) => ({id: `seed-${i}`, text: `Me
 const metrics = { mounts: 0, unmounts: 0, listLayouts: 0, renders: 0 };
 const ChatList = memo(function ChatList({data, offset}: {data: Message[]; offset: {value: number}}) {
   metrics.renders++;
+  const listRef = useRef<FlashListRef<Message>>(null);
+  const loaded = useCallback(() => listRef.current?.scrollToOffset({offset: 120, animated: false}), []);
   useEffect(() => { metrics.mounts++; return () => { metrics.unmounts++; }; }, []);
-  return <FlashList data={data} keyExtractor={item => item.id} maintainVisibleContentPosition={{disabled: true}}
+  return <FlashList ref={listRef} onLoad={loaded} data={data} keyExtractor={item => item.id} maintainVisibleContentPosition={{disabled: true}}
     onLayout={() => { metrics.listLayouts++; }} onScroll={event => { offset.value = event.nativeEvent.contentOffset.y; }} scrollEventThrottle={100}
     renderItem={({item}) => <View style={styles.row}><Text>{item.id}</Text><Text>{item.text}</Text></View>} />;
 });

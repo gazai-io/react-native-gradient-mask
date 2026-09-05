@@ -363,3 +363,7 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 <p align="center">
   <sub>為 React Native 社群用心打造 ❤️</sub>
 </p>
+
+## Native chat viewport mask
+
+See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) and [validation checklist](docs/validation/viewport-checklist.md).

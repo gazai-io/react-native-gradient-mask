@@ -9,7 +9,7 @@ private class GradientMaskHostLayer: CALayer {
     override var mask: CALayer? {
         get { super.mask }
         set {
-            guard newValue !== contentMask else { super.mask = newValue; return }
+            guard contentMask == nil || newValue !== contentMask else { super.mask = newValue; return }
             frameworkMask = newValue
             updateComposite()
         }
