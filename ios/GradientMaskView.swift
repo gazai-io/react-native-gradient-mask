@@ -1,7 +1,31 @@
 import ExpoModulesCore
 import UIKit
 
+/// Fabric owns CALayer.mask for overflow/corner clipping and may clear it after mounting.
+/// Keep our alpha mask independently, composing any framework clip with it.
+private class GradientMaskHostLayer: CALayer {
+    private var contentMask: CALayer?
+    private var frameworkMask: CALayer?
+    override var mask: CALayer? {
+        get { super.mask }
+        set {
+            guard newValue !== contentMask else { super.mask = newValue; return }
+            frameworkMask = newValue
+            updateComposite()
+        }
+    }
+    func setContentMask(_ value: CALayer?) {
+        if contentMask !== value { contentMask?.mask = nil; contentMask = value }
+        updateComposite()
+    }
+    private func updateComposite() {
+        contentMask?.mask = frameworkMask
+        super.mask = contentMask ?? frameworkMask
+    }
+}
+
 class GradientMaskView: ExpoView {
+    override class var layerClass: AnyClass { GradientMaskHostLayer.self }
     // All layers are retained. Height/opacity updates never allocate a mask tree.
     private let maskRoot = CALayer()
     private let legacyGradient = CAGradientLayer()
@@ -43,10 +67,7 @@ class GradientMaskView: ExpoView {
         topGradient.endPoint = CGPoint(x: 0.5, y: 1)
         bottomGradient.startPoint = CGPoint(x: 0.5, y: 1)
         bottomGradient.endPoint = CGPoint(x: 0.5, y: 0)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            guard let self else { return }
-            NSLog("MASK_FINAL edge=%d mask=%@ gradient=%@ colors=%@ points=%@ %@ solid=%f", self.edgeMode ? 1 : 0, String(describing: self.layer.mask), self.legacyGradient.frame.debugDescription, String(describing: self.legacyGradient.colors), self.legacyGradient.startPoint.debugDescription, self.legacyGradient.endPoint.debugDescription, self.legacySolid.opacity)
-        }
+
     }
 
     func setColors(_ colors: [Int]?) {
@@ -102,7 +123,6 @@ class GradientMaskView: ExpoView {
             profileDirty = false
         }
 
-        NSLog("MASK_DIAG colors=%@ alpha=%f edge=%d size=%@", rawColors.description, maskOpacity, edgeMode ? 1 : 0, bounds.debugDescription)
         let h = Double(bounds.height)
         var top = EdgeMaskGeometry.height(topHeight, ratio: topHeightRatio, container: h)
         var bottom = EdgeMaskGeometry.height(bottomHeight, ratio: bottomHeightRatio, container: h)
@@ -114,9 +134,9 @@ class GradientMaskView: ExpoView {
         let activeEdges = (top > 0 && topOpacity > 0) || (bottom > 0 && bottomOpacity > 0)
         let active = maskOpacity > 0 && bounds.width > 0 && h > 0 && (boundaryMode || (hasTransparency && (!edgeMode || activeEdges)))
         if active {
-            if layer.mask !== maskRoot { layer.mask = maskRoot }
+            (layer as? GradientMaskHostLayer)?.setContentMask(maskRoot)
         } else {
-            layer.mask = nil
+            (layer as? GradientMaskHostLayer)?.setContentMask(nil)
             return
         }
         maskRoot.frame = bounds
@@ -128,7 +148,6 @@ class GradientMaskView: ExpoView {
         bottomSolid.isHidden = !edgeMode || bottom <= 0
         middleSolid.isHidden = !edgeMode
 
-        NSLog("MASK_LAYER root=%@ legacy=%@ opacity=%f hidden=%d", maskRoot.description, legacyGradient.description, legacySolid.opacity, legacyGradient.isHidden ? 1 : 0)
         if edgeMode {
             let topFrame = CGRect(x: 0, y: CGFloat(start), width: bounds.width, height: CGFloat(top))
             let bottomFrame = CGRect(x: 0, y: CGFloat(end - bottom), width: bounds.width, height: CGFloat(bottom))
