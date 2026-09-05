@@ -56,3 +56,16 @@ export type GradientMaskViewProps = ViewProps & {
   topMaskOpacity?: number;
   bottomMaskOpacity?: number;
 };
+
+/** Explicit opt-in viewport mask. Coordinates are relative to this container. */
+export type ViewportMaskViewProps = ViewProps & {
+  /** Visible top coordinate in RN layout units; App calculates percentage lines. */
+  top: number;
+  /** Visible bottom coordinate (not an inset) in RN layout units. */
+  bottom: number;
+  /** Inward feather lengths. Percentages refer to container height. Default 0. */
+  topFeather?: MaskLength;
+  bottomFeather?: MaskLength;
+  /** Bypass clipping and feathering together. Default true. */
+  enabled?: boolean;
+};

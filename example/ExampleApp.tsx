@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import ViewportChatExample from './ViewportChatExample';
 import LegacyExample from './App';
 import EdgeMaskExample from './EdgeMaskExample';
 import MaskGeometryScene from './MaskGeometryScene';
 
 const validation = process.env.EXPO_PUBLIC_MASK_VALIDATION;
 export default function ExampleApp() {
-  const [legacy, setLegacy] = useState(false);
+  const [tab, setTab] = useState('chat');
   return <SafeAreaProvider><SafeAreaView style={styles.root}>
     {!validation && <View style={styles.tabs}>
-      <Pressable onPress={() => setLegacy(false)}><Text style={styles.tab}>Independent edges</Text></Pressable>
-      <Pressable onPress={() => setLegacy(true)}><Text style={styles.tab}>Original example</Text></Pressable>
+      <Pressable onPress={() => setTab('chat')}><Text style={styles.tab}>Chat viewport</Text></Pressable>
+      <Pressable onPress={() => setTab('edges')}><Text style={styles.tab}>Independent edges</Text></Pressable>
+      <Pressable onPress={() => setTab('legacy')}><Text style={styles.tab}>Original example</Text></Pressable>
     </View>}
-    {validation === 'geometry' ? <MaskGeometryScene /> : legacy ? <LegacyExample /> :
-      <EdgeMaskExample benchmark={validation === 'benchmark'} />}
+    {validation === 'geometry' ? <MaskGeometryScene /> : validation === 'benchmark' ? <EdgeMaskExample benchmark /> :
+      validation === 'chat-auto' ? <ViewportChatExample automatic /> : tab === 'legacy' ? <LegacyExample /> : tab === 'edges' ? <EdgeMaskExample /> : <ViewportChatExample />}
   </SafeAreaView></SafeAreaProvider>;
 }
 const styles = StyleSheet.create({

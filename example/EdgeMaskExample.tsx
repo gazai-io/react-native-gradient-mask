@@ -4,7 +4,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import Animated, { cancelAnimation, runOnJS, scrollTo, useAnimatedRef, useAnimatedStyle,
   useDerivedValue, useFrameCallback, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import type { AnimatedRef } from 'react-native-reanimated';
-import { AnimatedGradientMaskView, type MaskLength } from 'react-native-gradient-mask';
+import { AnimatedViewportMaskView, AnimatedGradientMaskView, type MaskLength } from 'react-native-gradient-mask';
 
 const ROWS = Array.from({ length: 200 }, (_, index) => ({ id: String(index), text:
   `Message ${index + 1} · Independent edge fades stay attached to the container while this FlashList scrolls.` }));
@@ -22,7 +22,7 @@ const MessageList = memo(function MessageList({ scrollRef }: { scrollRef: Animat
     </View>} />;
 });
 
-const PHASES = ['unmasked-scroll', 'mixed-static-scroll', 'animated-heights-opacity', 'switch-edges', 'resize-container', 'js-block-500ms'];
+const PHASES = ['unmasked-scroll', 'viewport-static-scroll', 'animated-boundaries', 'switch-mask', 'overlap-feathers', 'js-block-500ms'];
 type Report = { phase: string; frames: number; fps: number; p95Ms: number; maxMs: number; over25Ms: number; contentRenders: number };
 function blockJS() { const end = performance.now() + 500; while (performance.now() < end) { /* controlled benchmark */ } }
 
@@ -44,6 +44,9 @@ export default function EdgeMaskExample({ benchmark = false }: { benchmark?: boo
   const topHeight = useDerivedValue<MaskLength>(() => animate.value
     ? { value: 0.15 + 0.5 * progress.value, unit: 'ratio' } : top.value);
   const bottomHeight = useDerivedValue<MaskLength>(() => animate.value ? 20 + 100 * progress.value : bottom.value);
+  const visibleTop = useDerivedValue(() => animate.value ? 20 + 100 * progress.value : 60);
+  const visibleBottom = useDerivedValue(() => animate.value ? 360 - 80 * progress.value : 320);
+  const viewportEnabled = useDerivedValue(() => intensity.value > 0 && topOn.value);
   const boxStyle = useAnimatedStyle(() => ({ height: containerHeight.value }));
   const report = useCallback((value: Omit<Report, 'contentRenders'>) => {
     const complete = { ...value, contentRenders };
@@ -81,7 +84,8 @@ export default function EdgeMaskExample({ benchmark = false }: { benchmark?: boo
     intensity.value = phase === 0 ? 0 : phase === 2 ? .2 + .8 * progress.value : 1;
     topOn.value = phase !== 3 || Math.floor(elapsed / 100) % 2 === 0;
     bottomOn.value = phase !== 3 || Math.floor(elapsed / 100) % 3 !== 0;
-    containerHeight.value = phase === 4 ? 260 + 100 * progress.value : 360;
+    containerHeight.value = 360;
+    top.value = phase === 4 ? 300 : 40; bottom.value = phase === 4 ? 300 : 40;
     scrollTo(scrollRef, 0, 80 + 80 * Math.sin(elapsed / 650), false);
   }, benchmark);
 
@@ -115,10 +119,13 @@ export default function EdgeMaskExample({ benchmark = false }: { benchmark?: boo
     </>}
     <Animated.View style={[styles.background, boxStyle]}>
       <View pointerEvents="none" style={styles.backgroundLabel}><Text style={styles.subtitle}>BACKGROUND · visible through transparent edges</Text></View>
-      <AnimatedGradientMaskView style={styles.mask} topMaskHeight={topHeight} bottomMaskHeight={bottomHeight}
+      {benchmark ? <AnimatedViewportMaskView style={styles.mask} top={visibleTop} bottom={visibleBottom}
+        topFeather={top} bottomFeather={bottom} enabled={viewportEnabled}>
+        <MessageList scrollRef={scrollRef} />
+      </AnimatedViewportMaskView> : <AnimatedGradientMaskView style={styles.mask} topMaskHeight={topHeight} bottomMaskHeight={bottomHeight}
         topMaskEnabled={topOn} bottomMaskEnabled={bottomOn} maskOpacity={intensity}>
         <MessageList scrollRef={scrollRef} />
-      </AnimatedGradientMaskView>
+      </AnimatedGradientMaskView>}
     </Animated.View>
     {benchmark ? <ScrollView style={styles.results}>
       {reports.map(value => <Text key={value.phase} style={styles.result} accessibilityLabel={'MASK_BENCHMARK_RESULT ' + JSON.stringify(value)}>

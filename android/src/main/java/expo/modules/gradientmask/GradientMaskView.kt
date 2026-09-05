@@ -27,6 +27,9 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     private var direction = "top"
     private var maskOpacity = 1f
     private var edgeMode = false
+    private var boundaryMode = false
+    private var visibleTop = 0.0
+    private var visibleBottom = 0.0
     private var topHeight = 0.0
     private var topHeightRatio = false
     private var bottomHeight = 0.0
@@ -54,6 +57,9 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     }
     fun setDirection(value: String) { direction = value }
     fun setMaskOpacity(value: Double) { maskOpacity = EdgeMaskGeometry.opacity(value) }
+    fun setBoundaryMode(value: Boolean) { boundaryMode = value }
+    fun setVisibleTop(value: Double) { visibleTop = value }
+    fun setVisibleBottom(value: Double) { visibleBottom = value }
     fun setEdgeMode(value: Boolean) { edgeMode = value }
     fun setTopHeight(value: Double) { topHeight = value }
     fun setTopHeightRatio(value: Boolean) { topHeightRatio = value }
@@ -83,24 +89,28 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     override fun draw(canvas: Canvas) {
         if (width <= 0 || height <= 0 || maskOpacity <= 0f) { super.draw(canvas); return }
         updateProfile()
-        if (!hasTransparency) { super.draw(canvas); return }
+        if (!hasTransparency && !boundaryMode) { super.draw(canvas); return }
         val w = width.toFloat()
         val h = height.toFloat()
         var top = EdgeMaskGeometry.height(topHeight, topHeightRatio, h, resources.displayMetrics.density)
         var bottom = EdgeMaskGeometry.height(bottomHeight, bottomHeightRatio, h, resources.displayMetrics.density)
-        val scale = EdgeMaskGeometry.scale(top, bottom, h)
+        val start = if (boundaryMode) EdgeMaskGeometry.height(visibleTop, false, h, resources.displayMetrics.density) else 0f
+        val end = if (boundaryMode) maxOf(start, EdgeMaskGeometry.height(visibleBottom, false, h, resources.displayMetrics.density)) else h
+        if (boundaryMode && end <= start) return
+        val scale = EdgeMaskGeometry.scale(top, bottom, end - start)
         top *= scale
         bottom *= scale
-        if (edgeMode && !(top > 0f && topOpacity > 0f) && !(bottom > 0f && bottomOpacity > 0f)) {
+        if (!boundaryMode && edgeMode && !(top > 0f && topOpacity > 0f) && !(bottom > 0f && bottomOpacity > 0f)) {
             super.draw(canvas)
             return
         }
         val layer = canvas.saveLayer(0f, 0f, w, h, null)
         try {
+            if (boundaryMode) canvas.clipRect(0f, start, w, end)
             super.draw(canvas)
             if (edgeMode) {
-                if (top > 0f && topOpacity > 0f) drawVertical(canvas, w, top, 0f, false, maskOpacity * topOpacity)
-                if (bottom > 0f && bottomOpacity > 0f) drawVertical(canvas, w, bottom, h, true, maskOpacity * bottomOpacity)
+                if (top > 0f && topOpacity > 0f) drawVertical(canvas, w, top, start, false, maskOpacity * topOpacity)
+                if (bottom > 0f && bottomOpacity > 0f) drawVertical(canvas, w, bottom, end, true, maskOpacity * bottomOpacity)
             } else if (direction == "left" || direction == "right") {
                 maskPaint.shader = horizontalShader
                 maskPaint.alpha = (255f * maskOpacity).toInt()

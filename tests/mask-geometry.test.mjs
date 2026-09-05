@@ -73,3 +73,22 @@ test('gradient defaults, single colors and invalid stops are safe and determinis
   assert.deepEqual(normalizeGradient([0, 0xff000000], [0, NaN]).locations, [0, 1]);
   assert.deepEqual(normalizeGradient([0, 0x80000000, 0xff000000], [0, .4, 1]).locations, [0, .4, 1]);
 });
+
+// Boundary transport is independent of feather lengths; native clamps against actual bounds.
+import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
+const source = stripTypeScriptTypes(readFileSync(new URL('../src/viewportMaskProps.ts', import.meta.url), 'utf8')).replace("'./maskGeometry'", JSON.stringify(new URL('../src/maskGeometry.ts', import.meta.url).href));
+const { viewportMaskProps } = await import('data:text/javascript,' + encodeURIComponent(source));
+test('viewport opt-in preserves coordinates independently from mixed-unit feathers', () => {
+  const p = viewportMaskProps({top: 400 * .5, bottom: 360, topFeather: '50%', bottomFeather: '40px'});
+  assert.equal(p.boundaryMode, true);
+  assert.equal(p.visibleTop, 200);
+  assert.equal(p.visibleBottom, 360);
+  assert.equal(p.topHeight, .5);
+  assert.equal(p.topHeightRatio, true);
+  assert.equal(p.bottomHeight, 40);
+  assert.equal(p.bottomHeightRatio, false);
+  assert.equal(viewportMaskProps({top: -10, bottom: NaN}).visibleTop, 0);
+  assert.equal(viewportMaskProps({top: -10, bottom: NaN}).visibleBottom, 0);
+  assert.equal(viewportMaskProps({top: 20, bottom: 30, enabled: false}).maskOpacity, 0);
+});

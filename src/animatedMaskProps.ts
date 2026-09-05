@@ -9,7 +9,7 @@ export type AnimatedGradientMaskViewProps = Omit<GradientMaskViewProps, Animated
   [Key in AnimatedKey]?: GradientMaskViewProps[Key] | MaskSharedValue<NonNullable<GradientMaskViewProps[Key]>>;
 };
 
-function readValue<T>(input: T | MaskSharedValue<T> | undefined): T | undefined {
+export function readValue<T>(input: T | MaskSharedValue<T> | undefined): T | undefined {
   'worklet';
   // Length objects have a unit. SharedValues have a value but no unit.
   // Property access also works for Reanimated HostObjects (unlike `in`).

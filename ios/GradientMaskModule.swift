@@ -20,6 +20,9 @@ public class GradientMaskModule: Module {
                 view.setDirection(direction ?? "top")
             }
 
+            Prop("boundaryMode") { (view: GradientMaskView, value: Bool?) in view.setBoundaryMode(value ?? false) }
+            Prop("visibleTop") { (view: GradientMaskView, value: Double?) in view.setVisibleTop(value ?? 0) }
+            Prop("visibleBottom") { (view: GradientMaskView, value: Double?) in view.setVisibleBottom(value ?? 0) }
             Prop("edgeMode") { (view: GradientMaskView, value: Bool?) in view.setEdgeMode(value ?? false) }
             Prop("topHeight") { (view: GradientMaskView, value: Double?) in view.setTopHeight(value ?? 0) }
             Prop("topHeightRatio") { (view: GradientMaskView, value: Bool?) in view.setTopHeightRatio(value ?? false) }

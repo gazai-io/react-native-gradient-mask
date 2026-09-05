@@ -18,6 +18,9 @@ class GradientMaskView: ExpoView {
     private var direction = "top"
     private var maskOpacity: Float = 1
     private var edgeMode = false
+    private var boundaryMode = false
+    private var visibleTop = 0.0
+    private var visibleBottom = 0.0
     private var topHeight = 0.0
     private var topHeightRatio = false
     private var bottomHeight = 0.0
@@ -52,6 +55,9 @@ class GradientMaskView: ExpoView {
     }
     func setDirection(_ value: String) { direction = value }
     func setMaskOpacity(_ value: Double) { maskOpacity = EdgeMaskGeometry.opacity(value) }
+    func setBoundaryMode(_ value: Bool) { boundaryMode = value }
+    func setVisibleTop(_ value: Double) { visibleTop = value }
+    func setVisibleBottom(_ value: Double) { visibleBottom = value }
     func setEdgeMode(_ value: Bool) { edgeMode = value }
     func setTopHeight(_ value: Double) { topHeight = value }
     func setTopHeightRatio(_ value: Bool) { topHeightRatio = value }
@@ -95,11 +101,13 @@ class GradientMaskView: ExpoView {
         let h = Double(bounds.height)
         var top = EdgeMaskGeometry.height(topHeight, ratio: topHeightRatio, container: h)
         var bottom = EdgeMaskGeometry.height(bottomHeight, ratio: bottomHeightRatio, container: h)
-        let scale = EdgeMaskGeometry.scale(top: top, bottom: bottom, container: h)
+        let start = boundaryMode ? EdgeMaskGeometry.height(visibleTop, ratio: false, container: h) : 0
+        let end = boundaryMode ? max(start, EdgeMaskGeometry.height(visibleBottom, ratio: false, container: h)) : h
+        let scale = EdgeMaskGeometry.scale(top: top, bottom: bottom, container: end - start)
         top *= scale
         bottom *= scale
         let activeEdges = (top > 0 && topOpacity > 0) || (bottom > 0 && bottomOpacity > 0)
-        let active = maskOpacity > 0 && hasTransparency && bounds.width > 0 && h > 0 && (!edgeMode || activeEdges)
+        let active = maskOpacity > 0 && bounds.width > 0 && h > 0 && (boundaryMode || (hasTransparency && (!edgeMode || activeEdges)))
         if active {
             if layer.mask !== maskRoot { layer.mask = maskRoot }
         } else {
@@ -116,13 +124,13 @@ class GradientMaskView: ExpoView {
         middleSolid.isHidden = !edgeMode
 
         if edgeMode {
-            let topFrame = CGRect(x: 0, y: 0, width: bounds.width, height: CGFloat(top))
-            let bottomFrame = CGRect(x: 0, y: bounds.height - CGFloat(bottom), width: bounds.width, height: CGFloat(bottom))
+            let topFrame = CGRect(x: 0, y: CGFloat(start), width: bounds.width, height: CGFloat(top))
+            let bottomFrame = CGRect(x: 0, y: CGFloat(end - bottom), width: bounds.width, height: CGFloat(bottom))
             topGradient.frame = topFrame
             topSolid.frame = topFrame
             bottomGradient.frame = bottomFrame
             bottomSolid.frame = bottomFrame
-            middleSolid.frame = CGRect(x: 0, y: CGFloat(top), width: bounds.width, height: max(0, bounds.height - CGFloat(top + bottom)))
+            middleSolid.frame = CGRect(x: 0, y: CGFloat(start + top), width: bounds.width, height: CGFloat(max(0, end - start - top - bottom)))
             topSolid.opacity = 1 - maskOpacity * topOpacity
             bottomSolid.opacity = 1 - maskOpacity * bottomOpacity
         } else {
