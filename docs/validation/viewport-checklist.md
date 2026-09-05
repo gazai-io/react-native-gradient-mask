@@ -23,9 +23,9 @@
 | M-08 | 舊兩個元件保留；新增 `ViewportMaskView`／`AnimatedViewportMaskView` 才啟用可視邊界。四方向、opacity=0、animated opacity 1↔0 兩平台視覺回歸完成。 | 舊 SDK 54 的「最終功能版本」未重新跑；SDK 54 紀錄是未修改原版 baseline。 |
 | E-01 | 預設 Chat viewport：固定全高列表，Top 0↔50%（App 用容器高度計算）。 | — |
 | E-02 | Bottom panel 用 shared value 模擬面板升降，只改 bottom，不改列表容器。 | 真實鍵盤接線及 Android window resize 策略需產品端驗證。 |
-| E-03 | Type characters／Stop typing 控制持續文字成長，列表仍可捲動。 | Android 拖曳已測；iOS 同時手動捲動與逐字成長未測。 |
+| E-03 | Type characters／Stop typing 控制持續文字成長，列表仍可捲動。 | Android 逐字成長同時拖曳已測（offset 230.9、mount 1/0、layout 2）；iOS 同時手動捲動與逐字成長未測。 |
 | E-04 | Append／Prepend；穩定 message id；自動情境前後 offset、mount、layout 不變。FlashList 自動位置補償在診斷場景關閉。 | App 應自行決定前插後要維持數值 offset 或視覺 anchor。 |
-| E-05 | 快速點擊可中途反向；另有 0／40、50%／40px、8-unit window、越界、反向邊界按鈕。benchmark 含快速開关、重疊羽化。 | 手動極端反覆操作與實體裝置長時間測試待補。 |
+| E-05 | 快速點擊可中途反向；另有 0／40、50%／40px、8-unit window、越界、反向邊界按鈕。benchmark 含快速開关、重疊羽化。 | Android 在 Top 動畫途中再次點擊已確認回到 0、列表不 remount；iOS 手動與實體裝置長時間測試待補。 |
 | E-06 | 顯示容器 width/height、top/bottom、羽化參數；青／粉色參考線位於容器座標；文字以 UI animated props 更新。 | 一秒一次的列表診斷屬 Example，不在套件 render 路徑。 |
 
 座標、單位、非有限值、零高度與重疊 clamp 規則：[API 文件](../viewport-mask.md)。`top`／`bottom` 是 layout 單位的數值，百分比線由 App 計算；羽化可混合數字、`px`、`%` 或 ratio 物件。
@@ -70,3 +70,5 @@ Android 整段 `gfxinfo`：1,757 frames、75 missed-deadline frames（4.27%）�
 執行方式與 build modes：[Example 說明](../viewport-mask.md#example-and-performance)。切换 build mode 後務必檢查 App 畫面；Android 若 Gradle 將 bundle 視為 up-to-date，先執行 `:app:createBundleReleaseJsAndAssets --rerun-tasks` 再 assembleRelease。
 
 功能截圖：[iOS viewport](artifacts/ios-viewport-geometry.png)、[Android viewport](artifacts/android-viewport-geometry.png)、[iOS legacy on](artifacts/ios-legacy-opacity-on.png)、[iOS legacy off](artifacts/ios-legacy-opacity-off.png)、[Android legacy off](artifacts/android-legacy-opacity-off.png)、[iOS chat](artifacts/ios-chat-boundary.png)、[Android chat](artifacts/android-chat-boundary.png)、[Android scroll](artifacts/android-chat-scrolled.png)。
+
+最終互動驗證：[Android streaming + scroll](artifacts/android-stream-scroll.png)、[iOS default Example](artifacts/ios-default-example.png)、[Android default Example](artifacts/android-default-example.png)、[npm pack 檢查](artifacts/npm-pack.json)。
