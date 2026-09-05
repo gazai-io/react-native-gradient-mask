@@ -1,0 +1,25 @@
+{
+  "filename": "react-native-gradient-mask-0.1.1.tgz",
+  "size": 12236389,
+  "fileCount": 106,
+  "integrity": "sha512-DiyBR7rwsRXUNaKuD7mUYdJHE+A2wIDHPDPI5q2+LRBj2JCTbC8gzXWBuuhCp+Ih578a0nDIRjdBCmsP/tHbCQ==",
+  "requiredFiles": [
+    "ios/GradientMaskView.swift",
+    "ios/EdgeMaskGeometry.swift",
+    "ios/GradientMaskModule.swift",
+    "ios/GradientMask.podspec",
+    "android/build.gradle",
+    "android/src/main/java/expo/modules/gradientmask/GradientMaskModule.kt",
+    "android/src/main/java/expo/modules/gradientmask/GradientMaskView.kt",
+    "android/src/main/java/expo/modules/gradientmask/EdgeMaskGeometry.kt",
+    "build/ViewportMaskView.js",
+    "build/ViewportMaskView.d.ts",
+    "build/AnimatedViewportMaskView.js",
+    "build/AnimatedViewportMaskView.d.ts",
+    "build/GradientMask.types.d.ts",
+    "build/index.d.ts",
+    "expo-module.config.json"
+  ],
+  "requiredFilesPresent": true,
+  "staleBuildSrcPresent": false
+}

@@ -46,7 +46,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   }, [offset, automatic]);
   useEffect(() => {
     if (!streaming) return;
-    const timer = setInterval(() => setData(rows => rows.map((row, i) => i === 2 ? {...row, text: row.text + '字'} : row)), 80);
+    const timer = setInterval(() => setData(rows => rows.map(row => row.id === 'seed-2' ? {...row, text: row.text + '字'} : row)), 80);
     return () => clearInterval(timer);
   }, [streaming]);
   useEffect(() => {

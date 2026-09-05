@@ -66,6 +66,7 @@ The panel is simulated so the container stays fixed; connecting an actual keyboa
 Build modes (set **before** producing the native Release JS bundle):
 
 - `EXPO_PUBLIC_MASK_VALIDATION=geometry`: white-on-black native pixel oracle; static and animated viewport, zero feather, overlap, clamp, legacy fade.
+- `EXPO_PUBLIC_MASK_VALIDATION=legacy-regression`: four legacy directions, opacity zero, animated opacity toggling.
 - `EXPO_PUBLIC_MASK_VALIDATION=chat-auto`: runs the offline chat scenarios without UI automation.
 - `EXPO_PUBLIC_MASK_VALIDATION=benchmark`: 200 identical FlashList messages and identical UI-thread scroll trajectory, six 5-second phases after a 3-second warmup: mask disabled, static viewport, animated bounds, rapid enable/disable, overlapping feathers, and a deliberate 500ms JS stall.
 - unset: interactive Example and original Example tab.
