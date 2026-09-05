@@ -98,7 +98,7 @@ class GradientMaskView: ExpoView {
             profileDirty = false
         }
 
-        if !edgeMode { NSLog("MASK_DIAG colors=%@ alpha=%f transparent=%d size=%@", rawColors.description, maskOpacity, hasTransparency ? 1 : 0, bounds.debugDescription) }
+        NSLog("MASK_DIAG colors=%@ alpha=%f edge=%d size=%@", rawColors.description, maskOpacity, edgeMode ? 1 : 0, bounds.debugDescription)
         let h = Double(bounds.height)
         var top = EdgeMaskGeometry.height(topHeight, ratio: topHeightRatio, container: h)
         var bottom = EdgeMaskGeometry.height(bottomHeight, ratio: bottomHeightRatio, container: h)
