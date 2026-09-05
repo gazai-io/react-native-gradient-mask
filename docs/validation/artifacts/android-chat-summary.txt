@@ -1,0 +1,4 @@
+Automatic scenario completion: offset 120.0; list mounts 1/unmounts 0; layouts 2; renders 255 (message streaming updates).
+Before completion: same offset 120.0; mounts 1/0; layouts 2; renders 26.
+After intentional drag: offset 236.6; mounts 1/0; layouts 2; renders 255.
+Device: API 35 arm64 emulator.

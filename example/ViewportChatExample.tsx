@@ -71,7 +71,10 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const topLine = useAnimatedStyle(() => ({transform: [{translateY: Math.max(0, Math.min(height.value, top.value))}]}));
   const bottomLine = useAnimatedStyle(() => ({transform: [{translateY: Math.max(0, Math.min(height.value, bottom.value))}]}));
   const panelStyle = useAnimatedStyle(() => ({height: Math.max(0, panel.value)}));
-  const info = useAnimatedProps(() => ({text: `${width.value.toFixed(0)} × ${height.value.toFixed(0)} · top ${top.value.toFixed(1)} / bottom ${bottom.value.toFixed(1)} · fade ${String(topFeather.value)} / ${String(bottomFeather.value)}`, defaultValue: ''}));
+  const info = useAnimatedProps(() => {
+    const text = `${width.value.toFixed(0)} × ${height.value.toFixed(0)} · top ${top.value.toFixed(1)} / bottom ${bottom.value.toFixed(1)} · fade ${String(topFeather.value)} / ${String(bottomFeather.value)}`;
+    return {text, defaultValue: text};
+  });
   return <View style={styles.root}>
     <Text style={styles.title}>Fixed chat · viewport mask</Text>
     <AnimatedInput editable={false} style={styles.info} animatedProps={info} />
