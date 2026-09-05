@@ -48,3 +48,10 @@ iOS 在原生 `hitTest` 排除範圍外的新觸控；Android 同時處理 RN re
 ## 發布流程修正：0.2.1
 
 `v0.2.0` 的 GitHub run 33998638055 在安裝 npm 階段失敗：npm@latest 已為 12.0.2，需要 Node 24.15.0 以上，不相容固定的 24.13.0。尚未建立 GitHub release 或發布 npm。保留原標籤，固定 npm 11.6.2，改以 0.2.1 發布；套件功能程式碼不變，沿用以上原生驗證。
+
+### 0.2.1 發布結果
+
+- [GitHub run 33998706985](https://github.com/gazai-io/react-native-gradient-mask/actions/runs/33998706985) 全部成功；[GitHub Release](https://github.com/gazai-io/react-native-gradient-mask/releases/tag/v0.2.1) 已建立。
+- npm publish 回覆 `+ react-native-gradient-mask@0.2.1`，provenance 簽署成功，但同時提示套件正在處理中。發布後數分鐘 registry 仍回覆 404、latest 仍為 0.1.1，因此目前未將公開可安裝列為通過。
+- 本機 0.2.1 npm pack 共 113 個檔案，逐一比對工作區內容一致；含必要原生檔案與型別，排除測試與驗證圖片。
+- 自動審核拒絕更新遠端 main，依其允許方案僅推送版本標籤；main 尚未同步。
