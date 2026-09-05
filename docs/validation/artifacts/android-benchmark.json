@@ -1,0 +1,60 @@
+{
+  "device": "API 35 arm64 emulator",
+  "kind": "UI frame callback intervals; not physical-device GPU validation",
+  "results": [
+    {
+      "phase": "unmasked-scroll",
+      "frames": 280,
+      "fps": 56.19,
+      "p95Ms": 34,
+      "maxMs": 66.67,
+      "over25Ms": 17,
+      "contentRenders": 1
+    },
+    {
+      "phase": "viewport-static-scroll",
+      "frames": 286,
+      "fps": 57.58,
+      "p95Ms": 17,
+      "maxMs": 50,
+      "over25Ms": 9,
+      "contentRenders": 1
+    },
+    {
+      "phase": "animated-boundaries",
+      "frames": 289,
+      "fps": 58.19,
+      "p95Ms": 17,
+      "maxMs": 66.67,
+      "over25Ms": 5,
+      "contentRenders": 1
+    },
+    {
+      "phase": "switch-mask",
+      "frames": 297,
+      "fps": 60,
+      "p95Ms": 17,
+      "maxMs": 16.67,
+      "over25Ms": 0,
+      "contentRenders": 1
+    },
+    {
+      "phase": "overlap-feathers",
+      "frames": 291,
+      "fps": 58.59,
+      "p95Ms": 17,
+      "maxMs": 50,
+      "over25Ms": 6,
+      "contentRenders": 1
+    },
+    {
+      "phase": "js-block-500ms",
+      "frames": 294,
+      "fps": 59.19,
+      "p95Ms": 17,
+      "maxMs": 33.33,
+      "over25Ms": 4,
+      "contentRenders": 1
+    }
+  ]
+}
