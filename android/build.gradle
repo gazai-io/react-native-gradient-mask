@@ -1,7 +1,8 @@
 apply plugin: 'com.android.library'
 
 group = 'expo.modules.gradientmask'
-version = '0.1.0'
+def packageVersion = new groovy.json.JsonSlurper().parse(file('../package.json')).version
+version = packageVersion
 
 def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
 apply from: expoModulesCorePlugin
@@ -35,7 +36,7 @@ android {
   namespace "expo.modules.gradientmask"
   defaultConfig {
     versionCode 1
-    versionName "0.1.0"
+    versionName packageVersion
   }
   lintOptions {
     abortOnError false
