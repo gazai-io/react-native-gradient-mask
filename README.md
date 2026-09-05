@@ -368,3 +368,21 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 ## Native chat viewport mask
 
 See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) and [validation checklist](docs/validation/viewport-checklist.md).
+
+### Optional touch range and screen percentages (0.2.0)
+
+```tsx
+<AnimatedViewportMaskView
+  top={top} bottom={bottom}
+  topFeather="50%" bottomFeather="40px"
+  percentageReference="screen"
+  restrictTouchesToVisibleArea={true}
+>
+  <FlashList {...listProps} />
+</AnimatedViewportMaskView>
+```
+
+Defaults: `percentageReference="container"`, `restrictTouchesToVisibleArea={false}`.
+Screen percentages use RN screen height; numbers/px and local top/bottom coordinates are unchanged.
+Touch restriction checks new gesture starts only; an active drag continues outside the visible interval.
+See [0.2.0 validation](docs/validation/release-0.2.0.md).

@@ -31,9 +31,11 @@ The App calculates its 50% line from the measured **container**, not the screen.
 | `bottom` | number | number / shared / derived value | required |
 | `topFeather` | `MaskLength` | static / shared / derived length | 0 |
 | `bottomFeather` | `MaskLength` | static / shared / derived length | 0 |
+| `restrictTouchesToVisibleArea` | boolean | static / shared / derived boolean | false |
+| `percentageReference` | `container` / `screen` | static / shared / derived reference | container |
 | `enabled` | boolean | static / shared / derived boolean | true |
 
-Numbers and `"40px"` mean React Native layout units (iOS points / Android dp), not screenshot physical pixels. A length may also be `"50%"`, `{ value: .5, unit: 'ratio' }`, `{ value: 50, unit: 'percent' }`, or `{ value: 40, unit: 'px' }`. Feather percentages resolve against the current **container height**, before overlap clamping. Computed numbers such as `containerHeight * .3` work directly. Different units may be used on the two edges simultaneously.
+Numbers and `"40px"` mean React Native layout units (iOS points / Android dp), not screenshot physical pixels. A length may also be `"50%"`, `{ value: .5, unit: 'ratio' }`, `{ value: 50, unit: 'percent' }`, or `{ value: 40, unit: 'px' }`. Feather percentages resolve against the current **container height** by default, before overlap clamping. Set `percentageReference="screen"` to use `Dimensions.get('screen').height` in RN layout units. Screen size changes are subscribed to; keyboard/window changes do not redefine this as usable content height. Computed numbers such as `containerHeight * .3` work directly. Different units may be used on the two edges simultaneously.
 
 `top` and `bottom` intentionally accept numeric coordinates only. `topFeather="50%" bottomFeather="40px"` controls feather lengths; it does not position the visible top at 50%. Product definitions of “40px / 40%” are not inferred or fixed by this package.
 
@@ -42,12 +44,33 @@ Numbers and `"40px"` mean React Native layout units (iOS points / Android dp), n
 For actual native container height `H`:
 
 1. Non-finite coordinates become 0. Clamp `top` to `[0,H]`; clamp `bottom` to `[top,H]`. Inverted bounds produce an empty visible interval, never a reversed gradient.
-2. Negative/non-finite feather lengths become 0. Percentages/ratios clamp to `[0,1]`. Each resolved feather clamps to `[0,H]`.
+2. Negative/non-finite feather lengths become 0. Percentages/ratios clamp to `[0,1]` and multiply the selected container/screen height. Each resolved feather then clamps to `[0,H]`.
 3. Let `V = bottom - top`. If `topFeather + bottomFeather > V`, scale **both** by `V / sum`. Their ratio is preserved and they meet at one fully opaque point. `V=0` hides all content.
 4. Outside `[top,bottom]`, alpha is 0. Inside, the top feather rises from 0 to 1, the bottom feather falls from 1 to 0, and the middle is fully opaque. Zero feather creates a hard edge.
-5. `enabled=false` bypasses both clipping and feathering, without discarding values. Set either feather to 0 to independently disable that feather while retaining hard clipping.
+5. `enabled=false` bypasses clipping, feathering, and the optional touch restriction, without discarding values. Set either feather to 0 to independently disable that feather while retaining hard clipping.
 
-These are alpha masks, not colored overlays. They add no touch intercepting views. Touch exclusion outside the visible interval remains the App's responsibility. The mask's children retain their original hit testing geometry.
+These are alpha masks, not colored overlays. They add no touch intercepting views.
+
+### Optional native touch restriction
+
+`restrictTouchesToVisibleArea` defaults to `false`, preserving all existing touch behavior. When `true`, new touch sequences must start at `top <= y < bottom` after the same native coordinate clamp as the visual mask. Feathered pixels remain interactive; zero/empty/inverted visible intervals reject all new touches. Existing drags continue to the original child if the finger or the boundary moves outside the interval. Disabling the mask (`enabled=false`) also disables this restriction.
+
+Rejected touches can reach eligible underlying siblings or ancestors. This does not emit a range-change event or implement tap-to-hide-UI logic: the App's normal handlers determine that behavior. It governs touch hit testing, not accessibility focus filtering. Android RN hit-testing uses integer physical-pixel insets, conservatively rounding the visible interval inward by less than one physical pixel at fractional boundaries.
+
+```tsx
+<AnimatedViewportMaskView
+  top={top} bottom={bottom}
+  topFeather="50%" bottomFeather="40px"
+  percentageReference="screen"
+  restrictTouchesToVisibleArea={restrictTouches}
+>
+  <FlashList {...listProps} />
+</AnimatedViewportMaskView>
+```
+
+`restrictTouches` can be a boolean or a shared/derived boolean. The new controls do not change list geometry or schedule per-frame React renders. `percentageReference` also applies to the existing edge-height API (`topMaskHeight` / `bottomMaskHeight`). It does not change numeric `top` / `bottom`: those remain local container coordinates.
+
+For example, a 200-unit container on an 800-unit screen gives `10%` feathers of 20 units in container mode and 80 units in screen mode. `40px` remains 40 in both modes. If requested feathers do not fit the visible interval, the same proportional overlap clamp still applies.
 
 ## Existing edge API
 
@@ -65,6 +88,7 @@ The panel is simulated so the container stays fixed; connecting an actual keyboa
 
 Build modes (set **before** producing the native Release JS bundle):
 
+- `EXPO_PUBLIC_MASK_VALIDATION=touch`: touch range controls, background/content tap counters, scrolling, and container/screen percentage pixel oracle.
 - `EXPO_PUBLIC_MASK_VALIDATION=geometry`: white-on-black native pixel oracle; static and animated viewport, zero feather, overlap, clamp, legacy fade.
 - `EXPO_PUBLIC_MASK_VALIDATION=legacy-regression`: four legacy directions, opacity zero, animated opacity toggling.
 - `EXPO_PUBLIC_MASK_VALIDATION=chat-auto`: runs the offline chat scenarios without UI automation.

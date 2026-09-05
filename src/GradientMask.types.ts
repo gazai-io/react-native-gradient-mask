@@ -42,7 +42,7 @@ export type GradientMaskViewProps = ViewProps & {
   /**
    * Independent top fade: "50%", 40, "40px", or a calculated number.
    * Either height enables edge mode; an omitted edge has height 0.
-   * Percentages use this view's current height, not the screen.
+   * Percentages use this view's current height by default; percentageReference='screen' uses screen height.
    * If the heights exceed the view, both shrink proportionally to fit.
    * Colors/locations describe the fade from each edge inward in edge mode;
    * direction only applies when neither edge height is supplied.
@@ -69,7 +69,7 @@ export type ViewportMaskViewProps = ViewProps & {
   top: number;
   /** Visible bottom coordinate (not an inset) in RN layout units. */
   bottom: number;
-  /** Inward feather lengths. Percentages refer to container height. Default 0. */
+  /** Inward feather lengths. Percentages use percentageReference (default container). Default 0. */
   topFeather?: MaskLength;
   bottomFeather?: MaskLength;
   /**

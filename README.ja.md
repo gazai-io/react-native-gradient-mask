@@ -368,3 +368,10 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 ## Native chat viewport mask
 
 See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) and [validation checklist](docs/validation/viewport-checklist.md).
+
+### 0.2.0: タッチ範囲と画面基準の割合
+
+`restrictTouchesToVisibleArea` は既定で `false`。有効時は表示範囲内からのみ操作を開始でき、開始済みのドラッグは範囲外でも継続します。
+`percentageReference` は既定で `"container"`、`"screen"` で画面の高さを基準に割合を計算します。数値・px とコンテナ内の top/bottom 座標は変わりません。
+
+[API](docs/viewport-mask.md) · [0.2.0 validation](docs/validation/release-0.2.0.md)
