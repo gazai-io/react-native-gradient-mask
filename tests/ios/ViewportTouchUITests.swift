@@ -62,9 +62,12 @@ final class ViewportTouchUITests: XCTestCase {
         let p = CGPoint(x: frame.midX, y: frame.minY + 30)
         let container = sample(p)
         button("toggle-reference")
-        XCTAssertTrue(app.staticTexts["Percentage reference: screen"].waitForExistence(timeout: 5))
+        let toggle = app.descendants(matching: .any).matching(identifier: "toggle-reference").firstMatch
+        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "screen"), object: toggle)
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
         let expectation = XCTNSPredicateExpectation(predicate: NSPredicate { _,_ in self.sample(p) < container - 30 }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 5), .completed)
+        print("SCREEN_PERCENTAGE container=\(container) screen=\(sample(p))")
         XCTAssertEqual(oracle.frame, frame)
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "screen-percentage-oracle"; attachment.lifetime = .keepAlways; add(attachment)
