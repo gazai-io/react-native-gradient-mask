@@ -92,3 +92,11 @@ test('viewport opt-in preserves coordinates independently from mixed-unit feathe
   assert.equal(viewportMaskProps({top: -10, bottom: NaN}).visibleBottom, 0);
   assert.equal(viewportMaskProps({top: 20, bottom: 30, enabled: false}).maskOpacity, 0);
 });
+
+test('touch restriction is opt-in and travels with the viewport props', () => {
+  const base = {top: 100, bottom: 300};
+  assert.equal(viewportMaskProps(base).restrictTouchesToVisibleArea, false);
+  assert.equal(viewportMaskProps({...base, restrictTouchesToVisibleArea: false}).restrictTouchesToVisibleArea, false);
+  assert.equal(viewportMaskProps({...base, restrictTouchesToVisibleArea: true}).restrictTouchesToVisibleArea, true);
+  assert.equal(viewportMaskProps({...base, restrictTouchesToVisibleArea: true, enabled: false}).maskOpacity, 0);
+});

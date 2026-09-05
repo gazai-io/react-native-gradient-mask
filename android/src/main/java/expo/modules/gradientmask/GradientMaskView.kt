@@ -1,6 +1,11 @@
 package expo.modules.gradientmask
 
 import android.content.Context
+import android.graphics.Rect
+import android.view.MotionEvent
+import com.facebook.react.touch.ReactHitSlopView
+import kotlin.math.ceil
+import kotlin.math.floor
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -17,7 +22,7 @@ import expo.modules.kotlin.views.ExpoView
  * Unit-sized shaders are retained. Canvas transforms change fade height/direction without
  * allocating full-view bitmaps, shaders, color filters or arrays on animation frames.
  */
-class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(context, appContext), ReactHitSlopView {
     private var colors = intArrayOf(Color.TRANSPARENT, Color.BLACK)
     private var locations = floatArrayOf(0f, 1f)
     private var profileDirty = true
@@ -28,6 +33,33 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     private var maskOpacity = 1f
     private var edgeMode = false
     private var boundaryMode = false
+    private var restrictTouchesToVisibleArea = false
+    private val touchInsets = Rect()
+    private val restrictNewTouches: Boolean
+        get() = boundaryMode && restrictTouchesToVisibleArea && maskOpacity > 0f
+
+    // RN's JS responder target search happens separately from native dispatchTouchEvent.
+    // Negative hitSlop contracts its target search; clipChildren prevents descending outside it.
+    // Reuse one Rect. Resolve current native bounds/density only when hit testing is requested.
+    override val hitSlopRect: Rect?
+        get() {
+            if (!restrictNewTouches) return null
+            val h = height.toFloat()
+            val density = resources.displayMetrics.density
+            val start = EdgeMaskGeometry.height(visibleTop, false, h, density)
+            val end = maxOf(start, EdgeMaskGeometry.height(visibleBottom, false, h, density))
+            touchInsets.set(0, -ceil(start).toInt(), 0, floor(end).toInt() - height)
+            return touchInsets
+        }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        // Check DOWN only: MOVE/UP continue to the original child even after bounds change.
+        if (event.actionMasked == MotionEvent.ACTION_DOWN && restrictNewTouches &&
+            !EdgeMaskGeometry.containsTouch(event.y, visibleTop, visibleBottom, height.toFloat(), resources.displayMetrics.density)) {
+            return false
+        }
+        return super.dispatchTouchEvent(event)
+    }
     private var visibleTop = 0.0
     private var visibleBottom = 0.0
     private var topHeight = 0.0
@@ -57,6 +89,7 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     }
     fun setDirection(value: String) { direction = value }
     fun setMaskOpacity(value: Double) { maskOpacity = EdgeMaskGeometry.opacity(value) }
+    fun setRestrictTouchesToVisibleArea(value: Boolean) { restrictTouchesToVisibleArea = value }
     fun setBoundaryMode(value: Boolean) { boundaryMode = value }
     fun setVisibleTop(value: Double) { visibleTop = value }
     fun setVisibleBottom(value: Double) { visibleBottom = value }

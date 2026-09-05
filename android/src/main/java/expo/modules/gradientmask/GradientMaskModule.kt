@@ -24,6 +24,7 @@ class GradientMaskModule : Module() {
                 view.setDirection(direction ?: "top")
             }
 
+            Prop("restrictTouchesToVisibleArea") { view: GradientMaskView, value: Boolean? -> view.setRestrictTouchesToVisibleArea(value ?: false) }
             Prop("boundaryMode") { view: GradientMaskView, value: Boolean? -> view.setBoundaryMode(value ?: false) }
             Prop("visibleTop") { view: GradientMaskView, value: Double? -> view.setVisibleTop(value ?: 0.0) }
             Prop("visibleBottom") { view: GradientMaskView, value: Double? -> view.setVisibleBottom(value ?: 0.0) }

@@ -66,6 +66,12 @@ export type ViewportMaskViewProps = ViewProps & {
   /** Inward feather lengths. Percentages refer to container height. Default 0. */
   topFeather?: MaskLength;
   bottomFeather?: MaskLength;
+  /**
+   * Restrict new touches to the visible interval. Default false.
+   * Feathered pixels remain interactive. Existing drags are not cancelled.
+   * enabled=false also bypasses this restriction.
+   */
+  restrictTouchesToVisibleArea?: boolean;
   /** Bypass clipping and feathering together. Default true. */
   enabled?: boolean;
 };

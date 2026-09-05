@@ -43,6 +43,7 @@ class GradientMaskView: ExpoView {
     private var maskOpacity: Float = 1
     private var edgeMode = false
     private var boundaryMode = false
+    private var restrictTouchesToVisibleArea = false
     private var visibleTop = 0.0
     private var visibleBottom = 0.0
     private var topHeight = 0.0
@@ -80,6 +81,15 @@ class GradientMaskView: ExpoView {
     }
     func setDirection(_ value: String) { direction = value }
     func setMaskOpacity(_ value: Double) { maskOpacity = EdgeMaskGeometry.opacity(value) }
+    func setRestrictTouchesToVisibleArea(_ value: Bool) { restrictTouchesToVisibleArea = value }
+    // UIKit binds a touch sequence to its initial hit view. Do not cancel/move existing touches.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if boundaryMode && restrictTouchesToVisibleArea && maskOpacity > 0 &&
+            !EdgeMaskGeometry.containsTouch(Double(point.y), top: visibleTop, bottom: visibleBottom, container: Double(bounds.height)) {
+            return nil
+        }
+        return super.hitTest(point, with: event)
+    }
     func setBoundaryMode(_ value: Bool) { boundaryMode = value }
     func setVisibleTop(_ value: Double) { visibleTop = value }
     func setVisibleBottom(_ value: Double) { visibleBottom = value }

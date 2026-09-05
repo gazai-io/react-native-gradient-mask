@@ -15,3 +15,12 @@ equal(EdgeMaskGeometry.scale(top: 80, bottom: 80, container: 100), 0.625)
 equal(EdgeMaskGeometry.scale(top: 0, bottom: 0, container: 0), 1)
 equal(Double(EdgeMaskGeometry.opacity(.nan)), 0)
 print("Swift edge geometry: 13 checks passed")
+
+for (y, expected) in [(99.0, false), (100, true), (125, true), (299.9, true), (300, false), (301, false)] {
+    precondition(EdgeMaskGeometry.containsTouch(y, top: 100, bottom: 300, container: 400) == expected)
+}
+precondition(!EdgeMaskGeometry.containsTouch(200, top: 300, bottom: 100, container: 400))
+precondition(!EdgeMaskGeometry.containsTouch(0, top: 0, bottom: 0, container: 0))
+precondition(EdgeMaskGeometry.containsTouch(1, top: -100, bottom: 500, container: 400))
+precondition(!EdgeMaskGeometry.containsTouch(.nan, top: 0, bottom: 400, container: 400))
+print("Swift touch range: 10 checks passed")
