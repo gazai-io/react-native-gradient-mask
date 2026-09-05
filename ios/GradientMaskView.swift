@@ -43,6 +43,10 @@ class GradientMaskView: ExpoView {
         topGradient.endPoint = CGPoint(x: 0.5, y: 1)
         bottomGradient.startPoint = CGPoint(x: 0.5, y: 1)
         bottomGradient.endPoint = CGPoint(x: 0.5, y: 0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            guard let self else { return }
+            NSLog("MASK_FINAL edge=%d mask=%@ gradient=%@ colors=%@ points=%@ %@ solid=%f", self.edgeMode ? 1 : 0, String(describing: self.layer.mask), self.legacyGradient.frame.debugDescription, String(describing: self.legacyGradient.colors), self.legacyGradient.startPoint.debugDescription, self.legacyGradient.endPoint.debugDescription, self.legacySolid.opacity)
+        }
     }
 
     func setColors(_ colors: [Int]?) {
