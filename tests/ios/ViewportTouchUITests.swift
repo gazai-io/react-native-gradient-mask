@@ -44,11 +44,16 @@ final class ViewportTouchUITests: XCTestCase {
     }
     func sample(_ point: CGPoint) -> Int {
         let cg = app.screenshot().image.cgImage!
-        let bytes = CFDataGetBytePtr(cg.dataProvider!.data!)!
+        let data = cg.dataProvider!.data! as Data
         let scale = CGFloat(cg.width) / app.frame.width
         let x = Int(point.x * scale), y = Int(point.y * scale)
         let offset = y * cg.bytesPerRow + x * (cg.bitsPerPixel / 8)
-        return min(Int(bytes[offset]), Int(bytes[offset+1]), Int(bytes[offset+2]))
+        XCTAssertGreaterThanOrEqual(offset, 0)
+        XCTAssertLessThan(offset + 2, data.count)
+        return data.withUnsafeBytes { raw in
+            let bytes = raw.bindMemory(to: UInt8.self)
+            return min(Int(bytes[offset]), Int(bytes[offset+1]), Int(bytes[offset+2]))
+        }
     }
     func testScreenPercentageChangesFeatherWithoutChangingContainer() {
         let oracle = app.otherElements["reference-oracle"]
