@@ -24,6 +24,15 @@ class GradientMaskModule : Module() {
                 view.setDirection(direction ?: "top")
             }
 
+            Prop("edgeMode") { view: GradientMaskView, value: Boolean? -> view.setEdgeMode(value ?: false) }
+            Prop("topHeight") { view: GradientMaskView, value: Double? -> view.setTopHeight(value ?: 0.0) }
+            Prop("topHeightRatio") { view: GradientMaskView, value: Boolean? -> view.setTopHeightRatio(value ?: false) }
+            Prop("bottomHeight") { view: GradientMaskView, value: Double? -> view.setBottomHeight(value ?: 0.0) }
+            Prop("bottomHeightRatio") { view: GradientMaskView, value: Boolean? -> view.setBottomHeightRatio(value ?: false) }
+            Prop("topOpacity") { view: GradientMaskView, value: Double? -> view.setTopOpacity(value ?: 1.0) }
+            Prop("bottomOpacity") { view: GradientMaskView, value: Double? -> view.setBottomOpacity(value ?: 1.0) }
+            OnViewDidUpdateProps { view: GradientMaskView -> view.applyMaskUpdates() }
+
             // maskOpacity: 0 = no mask effect, 1 = full gradient mask
             Prop("maskOpacity") { view: GradientMaskView, opacity: Double? ->
                 view.setMaskOpacity(opacity ?: 1.0)

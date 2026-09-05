@@ -1,18 +1,22 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ViewProps } from 'react-native';
 
-export type GradientMaskViewProps = {
+/** Numbers / px are React Native logical pixels (iOS points, Android dp). */
+export type MaskLength = number | `${number}px` | `${number}%` |
+  { value: number; unit: 'px' | 'percent' | 'ratio' };
+
+export type GradientMaskViewProps = ViewProps & {
   /**
    * Gradient colors array (processed colors from processColor)
    * Use alpha values to control opacity
    * e.g., ['rgba(0,0,0,0)', 'rgba(0,0,0,1)'] = transparent to opaque
    */
-  colors: (number | null)[];
+  colors?: readonly (number | null)[];
 
   /**
    * Position of each color (0-1)
    * e.g., [0, 0.3, 1] means first color at 0%, second at 30%, third at 100%
    */
-  locations: number[];
+  locations?: readonly number[];
 
   /**
    * Gradient direction
@@ -32,12 +36,23 @@ export type GradientMaskViewProps = {
   maskOpacity?: number;
 
   /**
-   * Style
+   * Independent top fade: "50%", 40, "40px", or a calculated number.
+   * Either height enables edge mode; an omitted edge has height 0.
+   * Percentages use this view's current height, not the screen.
+   * If the heights exceed the view, both shrink proportionally to fit.
+   * Colors/locations describe the fade from each edge inward in edge mode;
+   * direction only applies when neither edge height is supplied.
    */
-  style?: StyleProp<ViewStyle>;
+  topMaskHeight?: MaskLength;
+  /** Independent bottom fade height; may use a different unit from the top. */
+  bottomMaskHeight?: MaskLength;
 
   /**
-   * Children
+   * Disable an edge without discarding its height. @default true
    */
-  children?: React.ReactNode;
+  topMaskEnabled?: boolean;
+  bottomMaskEnabled?: boolean;
+  /** Per-edge intensity, multiplied by maskOpacity. @default 1 */
+  topMaskOpacity?: number;
+  bottomMaskOpacity?: number;
 };

@@ -1,239 +1,129 @@
 package expo.modules.gradientmask
 
 import android.content.Context
-import android.graphics.*
-import android.view.View
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Shader
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.views.ExpoView
 
 /**
- * GradientMaskView - Native gradient transparency mask
- *
- * Uses Bitmap as mask with setLayerType + PorterDuff.Mode.DST_IN
- *
- * Color semantics (consistent with iOS CAGradientLayer mask):
- * - Color's alpha value determines content visibility in that area
- * - alpha = 0 → content transparent (see background)
- * - alpha = 255 → content opaque (see content)
- *
- * maskOpacity controls gradient mask effect intensity:
- * - maskOpacity = 0 → no gradient effect, content fully visible (all alpha=255)
- * - maskOpacity = 1 → full gradient effect (use original alpha)
- *
- * Performance optimization:
- * - Base gradient bitmap (baseMaskBitmap) only rebuilt when colors/locations/direction/size change
- * - maskOpacity changes only use ColorMatrix to adjust alpha, no bitmap rebuild
+ * One hardware-compatible offscreen pass, drawing children once.
+ * DST_OUT removes (1 - profile alpha) * intensity; this equals the previous DST_IN result.
+ * Unit-sized shaders are retained. Canvas transforms change fade height/direction without
+ * allocating full-view bitmaps, shaders, color filters or arrays on animation frames.
  */
 class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
-
-    // Gradient mask parameters
-    private var colors: IntArray? = null
-    private var locations: FloatArray? = null
-    private var direction: String = "top"
-
-    // maskOpacity: 0 = no gradient effect, 1 = full gradient effect
-    private var maskOpacity: Float = 1f
-
-    // Base gradient bitmap (full gradient effect, original gradient used when maskOpacity=1)
-    private var baseMaskBitmap: Bitmap? = null
-    // Whether base bitmap needs rebuild (only when colors/locations/direction/size change)
-    private var baseBitmapInvalidated = true
-
-    // Paint for drawing
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val porterDuffXferMode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
-
-    // ColorMatrix for adjusting mask alpha
-    private val colorMatrix = ColorMatrix()
-    private val colorMatrixFilter = ColorMatrixColorFilter(colorMatrix)
+    private var colors = intArrayOf(Color.TRANSPARENT, Color.BLACK)
+    private var locations = floatArrayOf(0f, 1f)
+    private var profileDirty = true
+    private var verticalShader: LinearGradient? = null
+    private var horizontalShader: LinearGradient? = null
+    private var hasTransparency = true
+    private var direction = "top"
+    private var maskOpacity = 1f
+    private var edgeMode = false
+    private var topHeight = 0.0
+    private var topHeightRatio = false
+    private var bottomHeight = 0.0
+    private var bottomHeightRatio = false
+    private var topOpacity = 1f
+    private var bottomOpacity = 1f
+    private val maskPaint = Paint().apply {
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+    }
 
     init {
-        // Ensure background is transparent
         setBackgroundColor(Color.TRANSPARENT)
-        // Always use SOFTWARE mode to avoid black flash when dynamically switching layer modes
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-
-        android.util.Log.d("GradientMask", "=== GradientMaskView init ===")
+        clipChildren = true
+        setWillNotDraw(false)
+        // Keep the inherited hardware rendering path. Do not force a software layer.
     }
 
-    // MARK: - Props setters
-
-    fun setColors(colorArray: List<Int>?) {
-        colors = colorArray?.toIntArray()
-        baseBitmapInvalidated = true
-        invalidate()
+    fun setColors(value: List<Int>?) {
+        val next = if (value.isNullOrEmpty()) intArrayOf(Color.TRANSPARENT, Color.BLACK) else value.toIntArray()
+        if (!colors.contentEquals(next)) { colors = next; profileDirty = true }
     }
-
-    fun setLocations(locationArray: List<Double>?) {
-        locations = locationArray?.map { it.toFloat() }?.toFloatArray()
-        baseBitmapInvalidated = true
-        invalidate()
+    fun setLocations(value: List<Double>?) {
+        val next = value?.map { it.toFloat() }?.toFloatArray() ?: floatArrayOf(0f, 1f)
+        if (!locations.contentEquals(next)) { locations = next; profileDirty = true }
     }
+    fun setDirection(value: String) { direction = value }
+    fun setMaskOpacity(value: Double) { maskOpacity = EdgeMaskGeometry.opacity(value) }
+    fun setEdgeMode(value: Boolean) { edgeMode = value }
+    fun setTopHeight(value: Double) { topHeight = value }
+    fun setTopHeightRatio(value: Boolean) { topHeightRatio = value }
+    fun setBottomHeight(value: Double) { bottomHeight = value }
+    fun setBottomHeightRatio(value: Boolean) { bottomHeightRatio = value }
+    fun setTopOpacity(value: Double) { topOpacity = EdgeMaskGeometry.opacity(value) }
+    fun setBottomOpacity(value: Double) { bottomOpacity = EdgeMaskGeometry.opacity(value) }
 
-    fun setDirection(dir: String) {
-        direction = dir
-        baseBitmapInvalidated = true
-        invalidate()
-    }
+    // One invalidation after the complete prop batch, no child layout request.
+    fun applyMaskUpdates() { invalidate() }
 
-    fun setMaskOpacity(opacity: Double) {
-        val newOpacity = opacity.toFloat().coerceIn(0f, 1f)
-        if (newOpacity != maskOpacity) {
-            maskOpacity = newOpacity
-            // Only need to invalidate, no bitmap rebuild needed
-            // dispatchDraw will use ColorMatrix to adjust alpha
-            invalidate()
+    private fun updateProfile() {
+        if (!profileDirty) return
+        val input = if (colors.size == 1) intArrayOf(colors[0], colors[0]) else colors
+        val removalColors = IntArray(input.size) { Color.argb(255 - Color.alpha(input[it]), 0, 0, 0) }
+        hasTransparency = removalColors.any { Color.alpha(it) > 0 }
+        val valid = locations.size == input.size && locations.indices.all {
+            locations[it].isFinite() && locations[it] >= 0f && locations[it] <= 1f &&
+                (it == 0 || locations[it] >= locations[it - 1])
         }
+        val stops = if (valid) locations else FloatArray(input.size) { it.toFloat() / (input.size - 1) }
+        verticalShader = LinearGradient(0f, 0f, 0f, 1f, removalColors, stops, Shader.TileMode.CLAMP)
+        horizontalShader = LinearGradient(0f, 0f, 1f, 0f, removalColors, stops, Shader.TileMode.CLAMP)
+        profileDirty = false
     }
 
-    // MARK: - Layout
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        if (w > 0 && h > 0) {
-            updateBaseMaskBitmap()
-            baseBitmapInvalidated = false
-        }
-    }
-
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        super.onLayout(changed, l, t, r, b)
-        if (changed) {
-            baseBitmapInvalidated = true
-        }
-    }
-
-    // MARK: - Drawing
-
-    override fun dispatchDraw(canvas: Canvas) {
-        // Check if dimensions are valid
-        if (width <= 0 || height <= 0) {
-            super.dispatchDraw(canvas)
+    override fun draw(canvas: Canvas) {
+        if (width <= 0 || height <= 0 || maskOpacity <= 0f) { super.draw(canvas); return }
+        updateProfile()
+        if (!hasTransparency) { super.draw(canvas); return }
+        val w = width.toFloat()
+        val h = height.toFloat()
+        var top = EdgeMaskGeometry.height(topHeight, topHeightRatio, h, resources.displayMetrics.density)
+        var bottom = EdgeMaskGeometry.height(bottomHeight, bottomHeightRatio, h, resources.displayMetrics.density)
+        val scale = EdgeMaskGeometry.scale(top, bottom, h)
+        top *= scale
+        bottom *= scale
+        if (edgeMode && !(top > 0f && topOpacity > 0f) && !(bottom > 0f && bottomOpacity > 0f)) {
+            super.draw(canvas)
             return
         }
-
-        // If base bitmap needs update, recreate it
-        if (baseBitmapInvalidated) {
-            updateBaseMaskBitmap()
-            baseBitmapInvalidated = false
-        }
-
-        val bitmap = baseMaskBitmap
-        // If no mask bitmap or maskOpacity=0, draw children directly (no mask effect)
-        if (bitmap == null || maskOpacity <= 0f) {
-            super.dispatchDraw(canvas)
-            return
-        }
-
-        // Use saveLayer to create offscreen buffer
-        val saveCount = canvas.saveLayer(
-            0f, 0f,
-            width.toFloat(), height.toFloat(),
-            null
-        )
-
+        val layer = canvas.saveLayer(0f, 0f, w, h, null)
         try {
-            // First draw all children to offscreen buffer
-            super.dispatchDraw(canvas)
-
-            // Apply mask (using DST_IN mode)
-            // Use ColorMatrix to adjust alpha, implementing maskOpacity effect
-            // This way we don't need to rebuild bitmap every time maskOpacity changes
-            paint.xfermode = porterDuffXferMode
-            paint.colorFilter = if (maskOpacity < 1f) {
-                // Use ColorMatrix to blend original alpha with fully opaque
-                // maskOpacity = 0 → all pixels' alpha becomes 255 (fully visible)
-                // maskOpacity = 1 → use original alpha
-                //
-                // ColorMatrix alpha row: [0, 0, 0, scale, translate]
-                // Result alpha = originalAlpha * scale + translate
-                //
-                // We want: resultAlpha = 255 + (originalAlpha - 255) * maskOpacity
-                //        = 255 * (1 - maskOpacity) + originalAlpha * maskOpacity
-                // So: scale = maskOpacity, translate = 255 * (1 - maskOpacity)
-                colorMatrix.set(floatArrayOf(
-                    1f, 0f, 0f, 0f, 0f,           // R
-                    0f, 1f, 0f, 0f, 0f,           // G
-                    0f, 0f, 1f, 0f, 0f,           // B
-                    0f, 0f, 0f, maskOpacity, 255f * (1f - maskOpacity)  // A
-                ))
-                ColorMatrixColorFilter(colorMatrix)
+            super.draw(canvas)
+            if (edgeMode) {
+                if (top > 0f && topOpacity > 0f) drawVertical(canvas, w, top, 0f, false, maskOpacity * topOpacity)
+                if (bottom > 0f && bottomOpacity > 0f) drawVertical(canvas, w, bottom, h, true, maskOpacity * bottomOpacity)
+            } else if (direction == "left" || direction == "right") {
+                maskPaint.shader = horizontalShader
+                maskPaint.alpha = (255f * maskOpacity).toInt()
+                val save = canvas.save()
+                if (direction == "right") { canvas.translate(w, 0f); canvas.scale(-w, 1f) }
+                else canvas.scale(w, 1f)
+                canvas.drawRect(0f, 0f, 1f, h, maskPaint)
+                canvas.restoreToCount(save)
             } else {
-                null
+                drawVertical(canvas, w, h, if (direction == "bottom") h else 0f, direction == "bottom", maskOpacity)
             }
-            canvas.drawBitmap(bitmap, 0f, 0f, paint)
-            paint.xfermode = null
-            paint.colorFilter = null
         } finally {
-            canvas.restoreToCount(saveCount)
+            canvas.restoreToCount(layer)
         }
     }
 
-    /**
-     * Update base gradient bitmap
-     * This bitmap contains original gradient effect (effect when maskOpacity = 1)
-     * maskOpacity adjustment is implemented via ColorMatrix in dispatchDraw
-     */
-    private fun updateBaseMaskBitmap() {
-        if (width <= 0 || height <= 0) return
-
-        // Recycle old bitmap
-        baseMaskBitmap?.recycle()
-
-        // Create new mask bitmap
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val bitmapCanvas = Canvas(bitmap)
-
-        val currentColors = colors
-        val currentLocations = locations
-
-        // If no colors/locations, create white mask (content fully visible)
-        if (currentColors == null || currentLocations == null ||
-            currentColors.size != currentLocations.size ||
-            currentColors.isEmpty()) {
-            bitmapCanvas.drawColor(Color.WHITE)
-            baseMaskBitmap = bitmap
-            return
-        }
-
-        // Convert colors to white + original alpha (mask only needs alpha channel)
-        val maskColors = IntArray(currentColors.size) { i ->
-            val originalColor = currentColors[i]
-            val originalAlpha = Color.alpha(originalColor)
-            Color.argb(originalAlpha, 255, 255, 255)
-        }
-
-        // Create gradient shader
-        val (startX, startY, endX, endY) = getGradientCoordinates()
-        val shader = LinearGradient(
-            startX, startY, endX, endY,
-            maskColors,
-            currentLocations,
-            Shader.TileMode.CLAMP
-        )
-
-        // Draw gradient to bitmap
-        val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.shader = shader
-        }
-        bitmapCanvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
-
-        baseMaskBitmap = bitmap
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        baseMaskBitmap?.recycle()
-        baseMaskBitmap = null
-    }
-
-    private fun getGradientCoordinates(): List<Float> {
-        return when (direction) {
-            "top" -> listOf(0f, 0f, 0f, height.toFloat())
-            "bottom" -> listOf(0f, height.toFloat(), 0f, 0f)
-            "left" -> listOf(0f, 0f, width.toFloat(), 0f)
-            "right" -> listOf(width.toFloat(), 0f, 0f, 0f)
-            else -> listOf(0f, 0f, 0f, height.toFloat())
-        }
+    private fun drawVertical(canvas: Canvas, width: Float, height: Float, y: Float, reverse: Boolean, opacity: Float) {
+        maskPaint.shader = verticalShader
+        maskPaint.alpha = (255f * opacity).toInt()
+        val save = canvas.save()
+        canvas.translate(0f, y)
+        canvas.scale(1f, if (reverse) -height else height)
+        canvas.drawRect(0f, 0f, width, 1f, maskPaint)
+        canvas.restoreToCount(save)
     }
 }
