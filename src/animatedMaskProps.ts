@@ -4,7 +4,7 @@ import type { GradientMaskViewProps } from './GradientMask.types';
 export type MaskSharedValue<T> = Readonly<Pick<SharedValue<T>, 'value'>>;
 
 type AnimatedKey = 'maskOpacity' | 'topMaskHeight' | 'bottomMaskHeight' |
-  'topMaskEnabled' | 'bottomMaskEnabled' | 'topMaskOpacity' | 'bottomMaskOpacity';
+  'topMaskEnabled' | 'bottomMaskEnabled' | 'topMaskOpacity' | 'bottomMaskOpacity' | 'percentageReference';
 export type AnimatedGradientMaskViewProps = Omit<GradientMaskViewProps, AnimatedKey> & {
   [Key in AnimatedKey]?: GradientMaskViewProps[Key] | MaskSharedValue<NonNullable<GradientMaskViewProps[Key]>>;
 };
@@ -21,6 +21,7 @@ export function readValue<T>(input: T | MaskSharedValue<T> | undefined): T | und
 export function readAnimatedMaskProps(props: Pick<AnimatedGradientMaskViewProps, AnimatedKey>) {
   'worklet';
   return {
+    percentageReference: readValue(props.percentageReference),
     maskOpacity: readValue(props.maskOpacity),
     topMaskHeight: readValue(props.topMaskHeight),
     bottomMaskHeight: readValue(props.bottomMaskHeight),

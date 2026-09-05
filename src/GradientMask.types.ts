@@ -4,7 +4,11 @@ import type { ViewProps } from 'react-native';
 export type MaskLength = number | `${number}px` | `${number}%` |
   { value: number; unit: 'px' | 'percent' | 'ratio' };
 
+export type MaskPercentageReference = 'container' | 'screen';
+
 export type GradientMaskViewProps = ViewProps & {
+  /** Percentage / ratio feather reference. Default container. Numbers / px are unchanged. */
+  percentageReference?: MaskPercentageReference;
   /**
    * Gradient colors array (processed colors from processColor)
    * Use alpha values to control opacity
@@ -59,6 +63,8 @@ export type GradientMaskViewProps = ViewProps & {
 
 /** Explicit opt-in viewport mask. Coordinates are relative to this container. */
 export type ViewportMaskViewProps = ViewProps & {
+  /** Percentage / ratio feather reference. Does not change top/bottom coordinates. */
+  percentageReference?: MaskPercentageReference;
   /** Visible top coordinate in RN layout units; App calculates percentage lines. */
   top: number;
   /** Visible bottom coordinate (not an inset) in RN layout units. */

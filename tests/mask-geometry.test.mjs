@@ -100,3 +100,19 @@ test('touch restriction is opt-in and travels with the viewport props', () => {
   assert.equal(viewportMaskProps({...base, restrictTouchesToVisibleArea: true}).restrictTouchesToVisibleArea, true);
   assert.equal(viewportMaskProps({...base, restrictTouchesToVisibleArea: true, enabled: false}).maskOpacity, 0);
 });
+
+test('screen reference changes only percentages and ratios, using live screen height', () => {
+  const base = {topMaskHeight: '50%', bottomMaskHeight: '40px'};
+  assert.equal(nativeMaskProps(base, 800).topHeight, .5);
+  const screen = nativeMaskProps({...base, percentageReference: 'screen'}, 800);
+  assert.equal(screen.topHeight, 400);
+  assert.equal(screen.topHeightRatio, false);
+  assert.equal(screen.bottomHeight, 40);
+  assert.equal(nativeMaskProps({...base, percentageReference: 'screen'}, 400).topHeight, 200);
+  const viewport = viewportMaskProps({top: 100, bottom: 300, topFeather: {value: .5, unit: 'ratio'}, bottomFeather: 40, percentageReference: 'screen'}, 800);
+  assert.equal(viewport.visibleTop, 100);
+  assert.equal(viewport.visibleBottom, 300);
+  assert.equal(viewport.topHeight, 400);
+  assert.equal(viewport.bottomHeight, 40);
+  assert.equal(nativeMaskProps({...base, percentageReference: 'screen'}, NaN).topHeight, 0);
+});

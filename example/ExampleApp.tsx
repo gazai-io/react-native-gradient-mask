@@ -1,3 +1,4 @@
+import TouchRangeScene from './TouchRangeScene';
 import LegacyRegressionScene from './LegacyRegressionScene';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -16,7 +17,7 @@ export default function ExampleApp() {
       <Pressable onPress={() => setTab('edges')}><Text style={styles.tab}>Independent edges</Text></Pressable>
       <Pressable onPress={() => setTab('legacy')}><Text style={styles.tab}>Original example</Text></Pressable>
     </View>}
-    {validation === 'legacy-regression' ? <LegacyRegressionScene /> : validation === 'geometry' ? <MaskGeometryScene /> : validation === 'benchmark' ? <EdgeMaskExample benchmark /> :
+    {validation === 'touch' ? <TouchRangeScene /> : validation === 'legacy-regression' ? <LegacyRegressionScene /> : validation === 'geometry' ? <MaskGeometryScene /> : validation === 'benchmark' ? <EdgeMaskExample benchmark /> :
       validation === 'chat-auto' ? <ViewportChatExample automatic /> : tab === 'legacy' ? <LegacyExample /> : tab === 'edges' ? <EdgeMaskExample /> : <ViewportChatExample />}
   </SafeAreaView></SafeAreaProvider>;
 }

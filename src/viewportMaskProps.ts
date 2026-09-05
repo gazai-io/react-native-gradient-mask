@@ -1,11 +1,11 @@
 import type { ViewportMaskViewProps } from './GradientMask.types';
-import { normalizeMaskLength } from './maskGeometry';
+import { referencedMaskLength } from './maskGeometry';
 
 export function viewportMaskProps(props: Pick<ViewportMaskViewProps,
-  'top' | 'bottom' | 'topFeather' | 'bottomFeather' | 'enabled' | 'restrictTouchesToVisibleArea'>) {
+  'top' | 'bottom' | 'topFeather' | 'bottomFeather' | 'enabled' | 'restrictTouchesToVisibleArea' | 'percentageReference'>, screenHeight = 0) {
   'worklet';
-  const top = normalizeMaskLength(props.topFeather);
-  const bottom = normalizeMaskLength(props.bottomFeather);
+  const top = referencedMaskLength(props.topFeather, props.percentageReference, screenHeight);
+  const bottom = referencedMaskLength(props.bottomFeather, props.percentageReference, screenHeight);
   return {
     boundaryMode: true, edgeMode: true,
     restrictTouchesToVisibleArea: props.restrictTouchesToVisibleArea === true,

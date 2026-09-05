@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import Animated, { useAnimatedProps, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
-import { AnimatedViewportMaskView, type MaskLength } from 'react-native-gradient-mask';
+import { AnimatedViewportMaskView, type MaskLength, type MaskPercentageReference } from 'react-native-gradient-mask';
 const AnimatedInput = Animated.createAnimatedComponent(TextInput);
 type Message = { id: string; text: string };
 const initial = Array.from({length: 200}, (_, i) => ({id: `seed-${i}`, text: `Message ${i} — Fixed offline chat content. Scroll while changing the visible window.`}));
@@ -29,6 +29,9 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const topFeather = useSharedValue<MaskLength>(40);
   const bottomFeather = useSharedValue<MaskLength>(40);
   const enabled = useSharedValue(true);
+  const restricted = useSharedValue(false);
+  const [restrictLabel, setRestrictLabel] = useState(false);
+  const [percentageReference, setPercentageReference] = useState<MaskPercentageReference>('container');
   const offset = useSharedValue(0);
   const mid = useRef(false);
   const panelOn = useRef(false);
@@ -87,10 +90,12 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text="8-unit window" action={() => {top.value = height.value - 8; panel.value = 0;}}/>
       <Button text="Out of bounds" action={() => {top.value = -100; panel.value = -100;}}/>
       <Button text="Reverse bounds" action={() => {top.value = height.value; panel.value = height.value;}}/>
+      <Button text={`Touch range: ${restrictLabel ? 'visible' : 'all'}`} action={() => {restricted.value = !restricted.value; setRestrictLabel(restricted.value);}}/>
+      <Button text={`%: ${percentageReference}`} action={() => setPercentageReference(percentageReference === 'container' ? 'screen' : 'container')}/>
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>
     </View>
     <View style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width;}}>
-      <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={top} bottom={bottom} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled}>
+      <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={top} bottom={bottom} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled} restrictTouchesToVisibleArea={restricted} percentageReference={percentageReference}>
         <ChatList data={data} offset={offset}/>
       </AnimatedViewportMaskView>
       <Animated.View pointerEvents="none" style={[styles.line, topLine]}/>

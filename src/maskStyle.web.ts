@@ -19,9 +19,9 @@ function edgeGradient(colors: number[], locations: number[], height: number, str
   return `linear-gradient(${bottom ? 'to top' : 'to bottom'},${stops})`;
 }
 
-export function buildMaskStyle(props: GradientMaskViewProps, colors: number[], locations: number[], height: number) {
+export function buildMaskStyle(props: GradientMaskViewProps, colors: number[], locations: number[], height: number, screenHeight = 0) {
   'worklet';
-  const p = nativeMaskProps(props);
+  const p = nativeMaskProps(props, screenHeight);
   let image = 'none';
   if (p.maskOpacity > 0 && p.edgeMode) {
     const sizes = resolveEdgeHeights(

@@ -1,3 +1,4 @@
+import { useScreenHeight } from './useScreenHeight';
 import { requireNativeView } from 'expo';
 import * as React from 'react';
 import type { GradientMaskViewProps } from './GradientMask.types';
@@ -7,11 +8,12 @@ const NativeView: React.ComponentType<GradientMaskViewProps & { maskDirection?: 
   requireNativeView('GradientMask');
 
 export default function GradientMaskView(props: GradientMaskViewProps) {
-  const { colors, locations, direction, maskOpacity, topMaskHeight, bottomMaskHeight,
+  const { colors, locations, direction, percentageReference, maskOpacity, topMaskHeight, bottomMaskHeight,
     topMaskEnabled, bottomMaskEnabled, topMaskOpacity, bottomMaskOpacity, ...viewProps } = props;
+  const screenHeight = useScreenHeight(percentageReference !== undefined && percentageReference !== 'container');
   const gradient = React.useMemo(() => normalizeGradient(colors, locations), [colors, locations]);
   return <NativeView {...viewProps} maskDirection={direction} {...gradient} {...nativeMaskProps({
-    maskOpacity, topMaskHeight, bottomMaskHeight, topMaskEnabled, bottomMaskEnabled,
+    percentageReference, maskOpacity, topMaskHeight, bottomMaskHeight, topMaskEnabled, bottomMaskEnabled,
     topMaskOpacity, bottomMaskOpacity,
-  })} />;
+  }, screenHeight)} />;
 }

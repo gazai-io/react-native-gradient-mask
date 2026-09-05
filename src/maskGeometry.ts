@@ -1,4 +1,4 @@
-import type { GradientMaskViewProps, MaskLength } from './GradientMask.types';
+import type { GradientMaskViewProps, MaskLength, MaskPercentageReference } from './GradientMask.types';
 
 export type NormalizedMaskLength = { value: number; isRatio: boolean };
 
@@ -31,6 +31,17 @@ export function normalizeMaskLength(length: MaskLength | undefined): NormalizedM
   return { value: isRatio ? Math.min(1, value) : value, isRatio };
 }
 
+/** Convert screen-relative ratios to logical units; native still clamps to its container. */
+export function referencedMaskLength(length: MaskLength | undefined, reference: MaskPercentageReference | undefined, screenHeight: number): NormalizedMaskLength {
+  'worklet';
+  const normalized = normalizeMaskLength(length);
+  if (reference === 'screen' && normalized.isRatio) {
+    const size = Number.isFinite(screenHeight) ? Math.max(0, screenHeight) : 0;
+    return { value: normalized.value * size, isRatio: false };
+  }
+  return normalized;
+}
+
 export function resolveEdgeHeights(top: NormalizedMaskLength, bottom: NormalizedMaskLength, height: number) {
   'worklet';
   const size = Number.isFinite(height) ? Math.max(0, height) : 0;
@@ -44,10 +55,10 @@ export function resolveEdgeHeights(top: NormalizedMaskLength, bottom: Normalized
 /** Flat props keep layout-dependent calculations on the native side. */
 export function nativeMaskProps(props: Pick<GradientMaskViewProps,
   'maskOpacity' | 'topMaskHeight' | 'bottomMaskHeight' | 'topMaskEnabled' | 'bottomMaskEnabled' |
-  'topMaskOpacity' | 'bottomMaskOpacity'>) {
+  'topMaskOpacity' | 'bottomMaskOpacity' | 'percentageReference'>, screenHeight = 0) {
   'worklet';
-  const top = normalizeMaskLength(props.topMaskHeight);
-  const bottom = normalizeMaskLength(props.bottomMaskHeight);
+  const top = referencedMaskLength(props.topMaskHeight, props.percentageReference, screenHeight);
+  const bottom = referencedMaskLength(props.bottomMaskHeight, props.percentageReference, screenHeight);
   return {
     edgeMode: props.topMaskHeight !== undefined || props.bottomMaskHeight !== undefined,
     topHeight: props.topMaskEnabled === false ? 0 : top.value,
