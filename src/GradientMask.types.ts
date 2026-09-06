@@ -63,12 +63,12 @@ export type GradientMaskViewProps = ViewProps & {
 
 /** Explicit opt-in viewport mask. Coordinates are relative to this container. */
 export type ViewportMaskViewProps = ViewProps & {
-  /** Percentage / ratio feather reference. Does not change top/bottom coordinates. */
+  /** Percentage / ratio reference for boundaries and feathers. Numeric coordinates are unchanged. */
   percentageReference?: MaskPercentageReference;
-  /** Visible top coordinate in RN layout units; App calculates percentage lines. */
-  top: number;
-  /** Visible bottom coordinate (not an inset) in RN layout units. */
-  bottom: number;
+  /** Visible top coordinate from container origin; percentages use percentageReference. */
+  top: MaskLength;
+  /** Visible bottom coordinate from container origin (not a bottom inset). */
+  bottom: MaskLength;
   /** Inward feather lengths. Percentages use percentageReference (default container). Default 0. */
   topFeather?: MaskLength;
   bottomFeather?: MaskLength;

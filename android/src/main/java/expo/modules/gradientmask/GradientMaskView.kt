@@ -46,8 +46,8 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
             if (!restrictNewTouches) return null
             val h = height.toFloat()
             val density = resources.displayMetrics.density
-            val start = EdgeMaskGeometry.height(visibleTop, false, h, density)
-            val end = maxOf(start, EdgeMaskGeometry.height(visibleBottom, false, h, density))
+            val start = EdgeMaskGeometry.height(visibleTop, visibleTopRatio, h, density)
+            val end = maxOf(start, EdgeMaskGeometry.height(visibleBottom, visibleBottomRatio, h, density))
             touchInsets.set(0, -ceil(start).toInt(), 0, floor(end).toInt() - height)
             return touchInsets
         }
@@ -55,13 +55,15 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         // Check DOWN only: MOVE/UP continue to the original child even after bounds change.
         if (event.actionMasked == MotionEvent.ACTION_DOWN && restrictNewTouches &&
-            !EdgeMaskGeometry.containsTouch(event.y, visibleTop, visibleBottom, height.toFloat(), resources.displayMetrics.density)) {
+            !EdgeMaskGeometry.containsTouch(event.y, visibleTop, visibleBottom, height.toFloat(), resources.displayMetrics.density, visibleTopRatio, visibleBottomRatio)) {
             return false
         }
         return super.dispatchTouchEvent(event)
     }
     private var visibleTop = 0.0
     private var visibleBottom = 0.0
+    private var visibleTopRatio = false
+    private var visibleBottomRatio = false
     private var topHeight = 0.0
     private var topHeightRatio = false
     private var bottomHeight = 0.0
@@ -91,6 +93,8 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
     fun setMaskOpacity(value: Double) { maskOpacity = EdgeMaskGeometry.opacity(value) }
     fun setRestrictTouchesToVisibleArea(value: Boolean) { restrictTouchesToVisibleArea = value }
     fun setBoundaryMode(value: Boolean) { boundaryMode = value }
+    fun setVisibleTopRatio(value: Boolean) { visibleTopRatio = value }
+    fun setVisibleBottomRatio(value: Boolean) { visibleBottomRatio = value }
     fun setVisibleTop(value: Double) { visibleTop = value }
     fun setVisibleBottom(value: Double) { visibleBottom = value }
     fun setEdgeMode(value: Boolean) { edgeMode = value }
@@ -127,8 +131,8 @@ class GradientMaskView(context: Context, appContext: AppContext) : ExpoView(cont
         val h = height.toFloat()
         var top = EdgeMaskGeometry.height(topHeight, topHeightRatio, h, resources.displayMetrics.density)
         var bottom = EdgeMaskGeometry.height(bottomHeight, bottomHeightRatio, h, resources.displayMetrics.density)
-        val start = if (boundaryMode) EdgeMaskGeometry.height(visibleTop, false, h, resources.displayMetrics.density) else 0f
-        val end = if (boundaryMode) maxOf(start, EdgeMaskGeometry.height(visibleBottom, false, h, resources.displayMetrics.density)) else h
+        val start = if (boundaryMode) EdgeMaskGeometry.height(visibleTop, visibleTopRatio, h, resources.displayMetrics.density) else 0f
+        val end = if (boundaryMode) maxOf(start, EdgeMaskGeometry.height(visibleBottom, visibleBottomRatio, h, resources.displayMetrics.density)) else h
         if (boundaryMode && end <= start) return
         val scale = EdgeMaskGeometry.scale(top, bottom, end - start)
         top *= scale

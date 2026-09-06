@@ -8,8 +8,8 @@ import { readValue } from './animatedMaskProps';
 import { viewportMaskProps } from './viewportMaskProps';
 type Keys = 'top' | 'bottom' | 'topFeather' | 'bottomFeather' | 'enabled' | 'restrictTouchesToVisibleArea' | 'percentageReference';
 export type AnimatedViewportMaskViewProps = Omit<ViewportMaskViewProps, Keys> & {
-  top: number | MaskSharedValue<number>;
-  bottom: number | MaskSharedValue<number>;
+  top: ViewportMaskViewProps['top'] | MaskSharedValue<ViewportMaskViewProps['top']>;
+  bottom: ViewportMaskViewProps['bottom'] | MaskSharedValue<ViewportMaskViewProps['bottom']>;
 } & { [K in Exclude<Keys, 'top' | 'bottom'>]?: ViewportMaskViewProps[K] | MaskSharedValue<NonNullable<ViewportMaskViewProps[K]>> };
 const NativeView: React.ComponentType<Omit<ViewportMaskViewProps, Keys> & Partial<ReturnType<typeof viewportMaskProps>>> = requireNativeView('GradientMask');
 const AnimatedNativeView = Animated.createAnimatedComponent(NativeView);

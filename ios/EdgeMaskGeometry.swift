@@ -8,9 +8,9 @@ enum EdgeMaskGeometry {
         let sum = top + bottom
         return sum > container && sum > 0 ? max(0, container) / sum : 1
     }
-    static func containsTouch(_ y: Double, top: Double, bottom: Double, container: Double) -> Bool {
-        let start = height(top, ratio: false, container: container)
-        let end = max(start, height(bottom, ratio: false, container: container))
+    static func containsTouch(_ y: Double, top: Double, bottom: Double, container: Double, topRatio: Bool = false, bottomRatio: Bool = false) -> Bool {
+        let start = height(top, ratio: topRatio, container: container)
+        let end = max(start, height(bottom, ratio: bottomRatio, container: container))
         return y.isFinite && end > start && y >= start && y < end
     }
     static func opacity(_ value: Double) -> Float {

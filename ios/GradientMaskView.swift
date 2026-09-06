@@ -46,6 +46,8 @@ class GradientMaskView: ExpoView {
     private var restrictTouchesToVisibleArea = false
     private var visibleTop = 0.0
     private var visibleBottom = 0.0
+    private var visibleTopRatio = false
+    private var visibleBottomRatio = false
     private var topHeight = 0.0
     private var topHeightRatio = false
     private var bottomHeight = 0.0
@@ -85,12 +87,14 @@ class GradientMaskView: ExpoView {
     // UIKit binds a touch sequence to its initial hit view. Do not cancel/move existing touches.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         if boundaryMode && restrictTouchesToVisibleArea && maskOpacity > 0 &&
-            !EdgeMaskGeometry.containsTouch(Double(point.y), top: visibleTop, bottom: visibleBottom, container: Double(bounds.height)) {
+            !EdgeMaskGeometry.containsTouch(Double(point.y), top: visibleTop, bottom: visibleBottom, container: Double(bounds.height), topRatio: visibleTopRatio, bottomRatio: visibleBottomRatio) {
             return nil
         }
         return super.hitTest(point, with: event)
     }
     func setBoundaryMode(_ value: Bool) { boundaryMode = value }
+    func setVisibleTopRatio(_ value: Bool) { visibleTopRatio = value }
+    func setVisibleBottomRatio(_ value: Bool) { visibleBottomRatio = value }
     func setVisibleTop(_ value: Double) { visibleTop = value }
     func setVisibleBottom(_ value: Double) { visibleBottom = value }
     func setEdgeMode(_ value: Bool) { edgeMode = value }
@@ -136,8 +140,8 @@ class GradientMaskView: ExpoView {
         let h = Double(bounds.height)
         var top = EdgeMaskGeometry.height(topHeight, ratio: topHeightRatio, container: h)
         var bottom = EdgeMaskGeometry.height(bottomHeight, ratio: bottomHeightRatio, container: h)
-        let start = boundaryMode ? EdgeMaskGeometry.height(visibleTop, ratio: false, container: h) : 0
-        let end = boundaryMode ? max(start, EdgeMaskGeometry.height(visibleBottom, ratio: false, container: h)) : h
+        let start = boundaryMode ? EdgeMaskGeometry.height(visibleTop, ratio: visibleTopRatio, container: h) : 0
+        let end = boundaryMode ? max(start, EdgeMaskGeometry.height(visibleBottom, ratio: visibleBottomRatio, container: h)) : h
         let scale = EdgeMaskGeometry.scale(top: top, bottom: bottom, container: end - start)
         top *= scale
         bottom *= scale
