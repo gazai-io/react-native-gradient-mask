@@ -10,7 +10,11 @@ def tree():
 def node(name):
  deadline=time.monotonic()+20
  while time.monotonic()<deadline:
-  for n in tree().iter('node'):
+  try:
+   nodes=list(tree().iter('node'))
+  except (subprocess.CalledProcessError, ET.ParseError):
+   time.sleep(.5);continue
+  for n in nodes:
    if name in [n.get('resource-id'),n.get('text'),n.get('content-desc')]:return n
   time.sleep(.5)
  raise AssertionError('Missing '+name)
