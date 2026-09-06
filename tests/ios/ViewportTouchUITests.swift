@@ -30,6 +30,14 @@ final class ViewportTouchUITests: XCTestCase {
         button("toggle-mask"); button("toggle-restrict")
         point(325).tap(); statusContains("content=4")
     }
+    func testAncestorWrapperCanBlockUnderlyingSibling() {
+        button("toggle-restrict"); button("toggle-wrapper") // auto wrapper intercepts
+        point(25).tap(); statusContains("background=0")
+        statusContains("content=0")
+        button("toggle-wrapper") // box-none wrapper allows sibling behind it
+        point(25).tap(); statusContains("background=1")
+        point(325).tap(); statusContains("background=2")
+    }
     func testOutsideStartRejectedAndInsideDragContinuesOutside() {
         button("toggle-restrict")
         point(25).press(forDuration: 0.05, thenDragTo: point(200))
@@ -134,5 +142,33 @@ final class DemoRecordingUITests: XCTestCase {
         }
         print("DEMO_RECORDING_FINISHED")
         Thread.sleep(forTimeInterval: 2)
+    }
+}
+
+final class ChatPassThroughUITests: XCTestCase {
+    func testChatHiddenAreaReachesActualPageBackground() {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "expo.modules.gradientmask.example")
+        app.terminate(); app.launch()
+        XCTAssertTrue(app.buttons["Top 50% screen"].waitForExistence(timeout: 15))
+        let host = app.otherElements["chat-mask-container"]
+        let status = app.staticTexts["chat-background-taps"]
+        func point(_ y: CGFloat) -> XCUICoordinate {
+            host.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: host.frame.width / 2, dy: y))
+        }
+        func expect(_ count: Int) {
+            let p = NSPredicate(format: "label BEGINSWITH %@", "Background taps: \(count) ·")
+            XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: p, object: status)], timeout: 5), .completed)
+        }
+        app.buttons["Top 50% screen"].tap()
+        point(25).tap(); expect(0) // restriction disabled: list keeps the touch
+        app.buttons["Touch range: all"].tap()
+        point(25).tap(); expect(1) // restriction enabled: underlying page receives it
+        let topY = app.otherElements["chat-top-line"].frame.minY - host.frame.minY
+        point(topY + 10).tap(); expect(1) // feather is still interactive list area
+        app.buttons["Bottom 100% ↔ 75%"].tap()
+        point(host.frame.height - 25).tap(); expect(2)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "chat-background-pass-through"; attachment.lifetime = .keepAlways; add(attachment)
     }
 }

@@ -20,6 +20,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const [data, setData] = useState(initial);
   const [streaming, setStreaming] = useState(false);
   const [patternBackground, setPatternBackground] = useState(true);
+  const [backgroundTaps, setBackgroundTaps] = useState(0);
   const [diagnostics, setDiagnostics] = useState('');
   const sequence = useRef(0);
   const height = useSharedValue(0);
@@ -98,12 +99,12 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
     const text = `${width.value.toFixed(0)} × ${height.value.toFixed(0)} · top ${top.value.toFixed(1)} / bottom ${bottom.value.toFixed(1)} · fade ${String(topFeather.value)} / ${String(bottomFeather.value)}`;
     return {text, defaultValue: text};
   });
-  return <View style={styles.root}>
-    <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill}>
+  return <View pointerEvents="box-none" style={styles.root}>
+    <Pressable testID="chat-background" accessibilityLabel="Page background" onPress={() => setBackgroundTaps(count => count + 1)} style={StyleSheet.absoluteFill}>
       {patternBackground && Array.from({length: 12}, (_, row) => <View key={row} style={{flex: 1, flexDirection: 'row'}}>
         {Array.from({length: 4}, (_, column) => <View key={column} style={{flex: 1, backgroundColor: (row + column) % 2 ? '#403057' : '#18364b'}} />)}
       </View>)}
-    </View>
+    </Pressable>
     <Text style={styles.title}>Fixed chat · viewport mask</Text>
     <AnimatedInput testID="chat-mask-metrics" editable={false} style={styles.info} animatedProps={info} />
     <View style={styles.controls}>
@@ -122,7 +123,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text={`Background: ${patternBackground ? 'pattern' : 'plain'}`} action={() => setPatternBackground(!patternBackground)}/>
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>
     </View>
-    <View ref={containerRef} testID="chat-mask-container" collapsable={false} style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width; measureContainer();}}>
+    <View ref={containerRef} testID="chat-mask-container" pointerEvents="box-none" collapsable={false} style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width; measureContainer();}}>
       <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={topInput} bottom={bottomInput} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled} restrictTouchesToVisibleArea={restricted} percentageReference={percentageReference}>
         <ChatList data={data} offset={offset}/>
       </AnimatedViewportMaskView>
@@ -130,7 +131,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Animated.View testID="chat-bottom-line" collapsable={false} pointerEvents="none" style={[styles.line, styles.bottomLine, bottomLine]}/>
       <Animated.View pointerEvents="none" style={[styles.panel, panelStyle]}><Text style={styles.info}>Simulated bottom panel</Text></Animated.View>
     </View>
-    <Text style={styles.diagnostics}>{diagnostics}</Text>
+    <Text testID="chat-background-taps" style={styles.diagnostics}>Background taps: {backgroundTaps} · {diagnostics}</Text>
     <Text style={styles.diagnostics}>Cyan: top · Pink: bottom. Rapidly tap Top to reverse mid-animation. App owns scroll anchoring and touch exclusion.</Text>
   </View>;
 }
