@@ -23,3 +23,7 @@
 
 - 最終預設 Example iOS/Android Release 建置通過。
 - npm pack 共 114 檔，逐一比對工作區一致，含原生檔案與新型別，驗證圖片不進套件。
+
+## 發布
+
+[GitHub run 34001438749](https://github.com/gazai-io/react-native-gradient-mask/actions/runs/34001438749) 全部成功，npm 回覆 `+ react-native-gradient-mask@0.2.2` 且 provenance 已上傳。npm 提示套件處理中，發布後首次 registry 查詢仍為 404，公開下載待平台完成。僅推送 v0.2.2 標籤，未更新遠端 main。
