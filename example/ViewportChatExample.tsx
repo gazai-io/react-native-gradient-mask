@@ -19,6 +19,7 @@ const ChatList = memo(function ChatList({data, offset}: {data: Message[]; offset
 export default function ViewportChatExample({automatic = false}: {automatic?: boolean}) {
   const [data, setData] = useState(initial);
   const [streaming, setStreaming] = useState(false);
+  const [patternBackground, setPatternBackground] = useState(true);
   const [diagnostics, setDiagnostics] = useState('');
   const sequence = useRef(0);
   const height = useSharedValue(0);
@@ -98,6 +99,11 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
     return {text, defaultValue: text};
   });
   return <View style={styles.root}>
+    <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill}>
+      {patternBackground && Array.from({length: 12}, (_, row) => <View key={row} style={{flex: 1, flexDirection: 'row'}}>
+        {Array.from({length: 4}, (_, column) => <View key={column} style={{flex: 1, backgroundColor: (row + column) % 2 ? '#403057' : '#18364b'}} />)}
+      </View>)}
+    </View>
     <Text style={styles.title}>Fixed chat · viewport mask</Text>
     <AnimatedInput testID="chat-mask-metrics" editable={false} style={styles.info} animatedProps={info} />
     <View style={styles.controls}>
@@ -113,6 +119,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text="Reverse bounds" action={() => {bottomRatio.value = null; topOverride.value = height.value; panel.value = height.value;}}/>
       <Button text={`Touch range: ${restrictLabel ? 'visible' : 'all'}`} action={() => {restricted.value = !restricted.value; setRestrictLabel(restricted.value);}}/>
       <Button text={`%: ${percentageReference}`} action={() => measureContainer(() => setPercentageReference(percentageReference === 'container' ? 'screen' : 'container'))}/>
+      <Button text={`Background: ${patternBackground ? 'pattern' : 'plain'}`} action={() => setPatternBackground(!patternBackground)}/>
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>
     </View>
     <View ref={containerRef} testID="chat-mask-container" collapsable={false} style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width; measureContainer();}}>
@@ -132,7 +139,7 @@ const styles = StyleSheet.create({
   root: {flex: 1, padding: 10}, title: {color: 'white', fontSize: 18, fontWeight: '600'},
   info: {color: 'white', fontSize: 11, padding: 4}, controls: {flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginVertical: 8},
   button: {backgroundColor: '#293d59', padding: 8, borderRadius: 5}, buttonText: {color: 'white', fontSize: 11},
-  container: {flex: 1, backgroundColor: '#125e66', overflow: 'hidden'}, row: {margin: 6, padding: 12, backgroundColor: '#e3eaf4', borderRadius: 6},
+  container: {flex: 1, backgroundColor: 'transparent', overflow: 'hidden'}, row: {margin: 6, padding: 12, backgroundColor: '#e3eaf4', borderRadius: 6},
   line: {position: 'absolute', left: 0, right: 0, top: 0, height: 1, backgroundColor: '#00ffff'}, bottomLine: {backgroundColor: '#ff55bb'},
   panel: {position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#35445bbb'}, diagnostics: {color: '#b4c4d7', fontSize: 10, marginTop: 5},
 });
