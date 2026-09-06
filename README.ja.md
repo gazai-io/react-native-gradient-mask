@@ -337,8 +337,8 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 ## Example の検証環境
 
 主要な Example 環境はアプリと同じ Expo 56.0.17 / React Native 0.85.3 です。
-[アップグレードと検証記録](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-56-upgrade.md)および
-[Expo 54 のビルド基準](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-54-baseline.md)（繁体字中国語）を参照してください。
+[アップグレードと検証記録](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/expo-56-upgrade.md)および
+[Expo 54 のビルド基準](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/expo-54-baseline.md)（繁体字中国語）を参照してください。
 環境の更新と機能の変更は別々に記録します。
 
 ## スポンサー
@@ -365,13 +365,17 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 
 ## Native chat viewport mask
 
-See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/viewport-checklist.md).
+See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/viewport-checklist.md).
 
 ### 0.2.0: タッチ範囲と画面基準の割合
 
 `restrictTouchesToVisibleArea` は既定で `false`。有効時は表示範囲内からのみ操作を開始でき、開始済みのドラッグは範囲外でも継続します。
 `percentageReference` は既定で `"container"`、`"screen"` で画面の高さを基準に割合を計算します。top/bottom も割合を指定でき、境界とぼかしに同じ基準を適用します。数値・px とコンテナ原点は変わりません。任意の `boundaryPercentageReference` で境界だけ別の基準にできます。
 
-[API](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md) · [0.2.0 validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/release-0.2.0.md)
+[API](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md) · [0.2.0 validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/release-0.2.0.md)
 
-画面中央に合わせる場合はコンテナ位置を差し引きます（Example 実装済み）。コンテナを透明にすると背面のページが見えます。[座標変換と透明背景](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo) を参照してください。
+画面中央に合わせる場合はコンテナ位置を差し引きます（Example 実装済み）。コンテナを透明にすると背面のページが見えます。[座標変換と透明背景](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo) を参照してください。
+
+### 背面へのタッチ透過（0.2.4）
+
+`restrictTouchesToVisibleArea={true}` を有効にし、タッチを受け取らない祖先コンテナに `pointerEvents="box-none"` を指定すると、可視範囲外のタッチが背面の兄弟要素に届きます。Chat viewport で `Top 50% screen` を押し、`背景穿透：關` を `背景穿透：開` に切り替えて背面ボタンを押してください。[統合と両プラットフォームの検証結果](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/pass-through-retest.md)。

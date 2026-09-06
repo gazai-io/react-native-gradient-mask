@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.4
+
+- Document background touch pass-through and `pointerEvents="box-none"` for non-interactive ancestor wrappers.
+- Keep the original chat layout with one background button; clarify the pass-through switch and synchronize its label with the shared value.
+- Add iOS/Android regression coverage for background clicks, repeated toggles, feather touches, and wrapper hit testing.
+- Native/JS library behavior and default touch restriction remain unchanged. Physical-device performance remains unverified.
+
 ## 0.2.3
 
 - Fix the Example screen-line controls to subtract the measured container position, including Android window/status-bar coordinates.
