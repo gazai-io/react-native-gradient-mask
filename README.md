@@ -30,26 +30,24 @@
 
 ## Demo
 
-<p align="center">
-  <table>
-    <tr>
-      <td align="center"><b>iOS</b></td>
-      <td align="center"><b>Android</b></td>
-    </tr>
-    <tr>
-      <td><a href="./images/ios  Demo Video.webm"><img src="./images/ios.png" alt="iOS Demo" width="280" /></a></td>
-      <td><a href="./images/android.mp4"><img src="./images/android.png" alt="Android Demo" width="280" /></a></td>
-    </tr>
-  </table>
-</p>
+<table>
+  <tr><th>iOS</th><th>Android</th></tr>
+  <tr>
+    <td><a href="https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-ios.mp4"><img src="https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-ios.gif" alt="iOS viewport mask: screen boundaries and transparent background" width="280" /></a></td>
+    <td><a href="https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-android.mp4"><img src="https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-android.gif" alt="Android viewport mask: screen boundaries and transparent background" width="280" /></a></td>
+  </tr>
+</table>
+
+Recorded Example: screen-midpoint top, background switching, 75% bottom, feathers and mask toggle. Click a GIF for the MP4. GIFs are 12 fps previews, not performance measurements.
+
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
 | **Cross-platform** | iOS, Android, and Web support |
-| **Native Performance** | iOS: `CAGradientLayer` • Android: `Bitmap` + `PorterDuff` • Web: CSS `mask-image` |
-| **Reanimated Support** | Smooth 60fps mask animations with `AnimatedGradientMaskView` |
+| **Native Performance** | iOS: `CAGradientLayer` • Android: `Canvas.saveLayer` + `PorterDuff` • Web: CSS `mask-image` |
+| **Reanimated Support** | UI-thread mask animations with `AnimatedGradientMaskView` |
 | **Flexible** | Custom colors, locations, directions, and mask intensity |
 | **TypeScript** | Full type definitions included |
 
@@ -319,7 +317,7 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 | Platform | Implementation | Status |
 |----------|----------------|:------:|
 | iOS | `CAGradientLayer` | ✅ |
-| Android | `Bitmap` + `LinearGradient` + `PorterDuff` | ✅ |
+| Android | `Canvas.saveLayer` + `LinearGradient` + `PorterDuff` | ✅ |
 | Web | CSS `mask-image` + `linear-gradient` | ✅ |
 
 ---
@@ -327,8 +325,8 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 ## Example validation
 
 The primary example environment matches the app: Expo 56.0.17 / React Native 0.85.3.
-See the [upgrade and validation record](docs/validation/expo-56-upgrade.md) and the
-[original Expo 54 build baseline](docs/validation/expo-54-baseline.md) (Traditional Chinese).
+See the [upgrade and validation record](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-56-upgrade.md) and the
+[original Expo 54 build baseline](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-54-baseline.md) (Traditional Chinese).
 Environment upgrades and functional changes are recorded separately.
 
 ## Built for Anini
@@ -367,7 +365,7 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 
 ## Native chat viewport mask
 
-See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) and [validation checklist](docs/validation/viewport-checklist.md).
+See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/viewport-checklist.md).
 
 ### Optional touch range and screen percentages (0.2.0)
 
@@ -385,4 +383,6 @@ See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) a
 Defaults: `percentageReference="container"`, `restrictTouchesToVisibleArea={false}`.
 Screen percentages use RN screen height for both boundaries and feathers. `top` / `bottom` accept MaskLength (including percentages), measured from the container origin. Numbers/px are unchanged. Optional `boundaryPercentageReference` overrides only boundaries; otherwise they inherit `percentageReference`.
 Touch restriction checks new gesture starts only; an active drag continues outside the visible interval.
-See [0.2.0 validation](docs/validation/release-0.2.0.md).
+See [0.2.0 validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/release-0.2.0.md).
+
+For absolute screen lines, subtract the container position (as the Example does). A transparent container reveals the page behind the mask. See [screen conversion and transparent backgrounds](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo).

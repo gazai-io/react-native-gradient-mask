@@ -30,26 +30,24 @@
 
 ## 展示
 
-<p align="center">
-  <table>
-    <tr>
-      <td align="center"><b>iOS</b></td>
-      <td align="center"><b>Android</b></td>
-    </tr>
-    <tr>
-      <td><a href="./images/ios  Demo Video.webm"><img src="./images/ios.png" alt="iOS 展示" width="280" /></a></td>
-      <td><a href="./images/android.mp4"><img src="./images/android.png" alt="Android 展示" width="280" /></a></td>
-    </tr>
-  </table>
-</p>
+<table>
+  <tr><th>iOS</th><th>Android</th></tr>
+  <tr>
+    <td><a href="https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-ios.mp4"><img src="https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-ios.gif" alt="iOS viewport mask: screen boundaries and transparent background" width="280" /></a></td>
+    <td><a href="https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-android.mp4"><img src="https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-android.gif" alt="Android viewport mask: screen boundaries and transparent background" width="280" /></a></td>
+  </tr>
+</table>
+
+新版 Example 實錄：螢幕 50% 上緣、背景切換、75% 下緣、獨立羽化與遮罩開關。點 GIF 可下載 MP4；GIF 為 12 fps 預覽，不代表效能量測。
+
 
 ## 特色
 
 | 特色 | 說明 |
 |------|------|
 | **跨平台** | 支援 iOS、Android 和 Web |
-| **原生效能** | iOS: `CAGradientLayer` • Android: `Bitmap` + `PorterDuff` • Web: CSS `mask-image` |
-| **Reanimated 支援** | 透過 `AnimatedGradientMaskView` 實現 60fps 流暢遮罩動畫 |
+| **原生效能** | iOS: `CAGradientLayer` • Android: `Canvas.saveLayer` + `PorterDuff` • Web: CSS `mask-image` |
+| **Reanimated 支援** | 透過 `AnimatedGradientMaskView` 在 UI thread 驅動遮罩動畫 |
 | **彈性設定** | 自訂顏色、位置、方向與遮罩強度 |
 | **TypeScript** | 完整型別定義 |
 
@@ -319,7 +317,7 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 | 平台 | 實作方式 | 狀態 |
 |------|----------|:----:|
 | iOS | `CAGradientLayer` | ✅ |
-| Android | `Bitmap` + `LinearGradient` + `PorterDuff` | ✅ |
+| Android | `Canvas.saveLayer` + `LinearGradient` + `PorterDuff` | ✅ |
 | Web | CSS `mask-image` + `linear-gradient` | ✅ |
 
 ---
@@ -339,8 +337,8 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 ## Example 驗證環境
 
 主要 Example 已對齊 App：Expo 56.0.17 / React Native 0.85.3。
-重現步驟見[升級與驗證紀錄](docs/validation/expo-56-upgrade.md)，
-原版結果見 [Expo 54 建置基準](docs/validation/expo-54-baseline.md)。環境升級與功能修改分開記錄。
+重現步驟見[升級與驗證紀錄](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-56-upgrade.md)，
+原版結果見 [Expo 54 建置基準](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-54-baseline.md)。環境升級與功能修改分開記錄。
 
 ## 贊助
 
@@ -366,11 +364,13 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 
 ## Native chat viewport mask
 
-See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) and [validation checklist](docs/validation/viewport-checklist.md).
+See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/viewport-checklist.md).
 
 ### 0.2.0：可選觸控範圍與螢幕百分比
 
 `restrictTouchesToVisibleArea` 預設 `false`；開啟後只允許在可視範圍內開始新觸控，已開始的拖曳移出範圍仍會繼續，羽化區可操作。
 `percentageReference` 預設 `"container"`，可設為 `"screen"` 讓百分比／ratio 邊界與羽化使用 RN 螢幕高度。`top`／`bottom` 也接受 `"50%"`，原點仍是容器頂端；數值／px 不變。可選 `boundaryPercentageReference` 僅覆寫邊界基準，不填就共用 `percentageReference`。
 
-詳見 [API 與範例](docs/viewport-mask.md)及 [0.2.0 驗證](docs/validation/release-0.2.0.md)。
+詳見 [API 與範例](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md)及 [0.2.0 驗證](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/release-0.2.0.md)。
+
+螢幕中線需扣掉容器位置；Example 已完成換算。容器背景設為透明後，隱藏與羽化區域會透出後方頁面。詳見 [座標換算與透明背景](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo)。

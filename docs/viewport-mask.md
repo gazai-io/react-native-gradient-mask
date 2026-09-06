@@ -118,7 +118,7 @@ See [validation and outstanding requirements](validation/viewport-checklist.md) 
 
 Both boundaries are measured downward from the **container origin**. With an 800-unit screen, `top="50%"` in screen mode requests local y=400, then clamps to the actual container. It does not measure the container's screen position or automatically align to the physical screen midpoint. To align an absolute screen line, the App passes `screenLineY - containerScreenY` as a numeric coordinate. `bottom={40}` is y=40, not a 40-unit inset; use `bottom={containerHeight - 40}` for that inset.
 
-The Chat viewport `%: container/screen` toggle now changes both percentage boundaries and feathers. Press `Top 0 ↔ 50%` to animate the top boundary using the selected reference; `Bottom 100% ↔ 75%` changes the percentage bottom coordinate. `Bottom panel` returns to an App-calculated numeric bottom coordinate. Reference lines show the clamped position. The old README videos have not been re-recorded.
+The Chat viewport `%: container/screen` toggle now changes both percentage boundaries and feathers. Press `Top 0 ↔ 50%` to animate the top boundary using the selected reference; `Bottom 100% ↔ 75%` changes the percentage bottom coordinate. `Bottom panel` returns to an App-calculated numeric bottom coordinate. Reference lines show the clamped position. The 0.2.3 README GIFs and MP4s demonstrate the corrected screen-line controls and transparent background.
 
 ### Example screen-line correction
 
@@ -129,3 +129,41 @@ The package's `percentageReference="screen"` remains a length reference; it does
 Position regression: run the default Example and `tests/android/screen_origin.py`, or run XCTest with `-only-testing:GradientMaskUITests/ScreenBoundaryUITests`. Run the older touch scene with `-only-testing:GradientMaskUITests/ViewportTouchUITests`.
 
 Verified on iOS 26.5 (screen 956 RN units: top y=478, bottom y=717) and Android API 35 (screenshot height 2400px: top line y=1200.5, bottom line y=1800.5). Both retained the original container frame. Evidence: [iOS](validation/artifacts/screen-origin/ios-top-midpoint.png), [Android](validation/artifacts/screen-origin/android-top-midpoint.png). Physical-device performance has not been measured for this Example change.
+
+## Transparent backgrounds and the 0.2.3 demo
+
+The mask changes alpha; it does not paint a solid color over the list. Remove the **container** background (or use `backgroundColor: 'transparent'`) to reveal the page behind it. Child row backgrounds remain visible where their alpha is nonzero. Keep the page artwork outside the masked subtree, behind the mask.
+
+The Example now starts with a blue/purple checkerboard at page level. Press **Top 50% screen**, then **Background: pattern/plain** to see the hidden area and feathered pixels reveal the changed background. Press **Bottom 100% ↔ 75%** for a second moving edge. The checkerboard is a static background View with `pointerEvents="none"`; it does not intercept gestures.
+
+For a full-screen React root, the essential screen-line conversion is:
+
+```tsx
+const containerRef = useRef<View>(null);
+const containerY = useSharedValue(0);
+const top = useDerivedValue(() => screenHeight * 0.5 - containerY.value);
+const bottom = useDerivedValue(() => screenHeight * 0.75 - containerY.value);
+
+<View
+  ref={containerRef}
+  collapsable={false}
+  style={{flex: 1, backgroundColor: 'transparent'}}
+  onLayout={() => containerRef.current?.measure((_x, _y, _w, _h, _pageX, pageY) => {
+    containerY.value = pageY;
+  })}
+>
+  <AnimatedViewportMaskView style={StyleSheet.absoluteFill}
+    top={top} bottom={bottom} topFeather={40} bottomFeather={40}>
+    {children}
+  </AnimatedViewportMaskView>
+</View>
+```
+
+Here `screenHeight` is RN `Dimensions.get('screen').height`, updated on screen-size changes. The Example remeasures on layout, screen changes, and control actions. If an App animates its container position independently, it must update that origin alongside its motion; do not treat a one-time measurement as permanent. For embedded roots or multiple windows, convert the root's coordinates to the chosen screen space first. Native clamp still handles offscreen or inverted bounds.
+
+### Recordings
+
+- [iOS MP4](https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-ios.mp4) · [iOS GIF](https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-ios.gif)
+- [Android MP4](https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-android.mp4) · [Android GIF](https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-android.gif)
+
+MP4s are real simulator recordings. GIFs use a 360px width and 12 fps with a 128-color palette to reduce download size; they are visual demonstrations, not an FPS or physical-device performance result. iOS recording uses `DemoRecordingUITests` with `simctl io recordVideo`; Android uses `adb shell screenrecord` and the visible controls.

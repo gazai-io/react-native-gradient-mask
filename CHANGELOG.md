@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+
+- Fix the Example screen-line controls to subtract the measured container position, including Android window/status-bar coordinates.
+- Demonstrate true transparency with a switchable page background and transparent mask container.
+- Add iOS/Android MP4 recordings and GIF previews, refresh coordinate and integration docs, and exclude demo media from the npm runtime package.
+- Native/JS library behavior is unchanged from 0.2.2; the screen-position conversion is demonstrated in Example code.
+
 ## 0.2.2
 
 - Accept px, percentage and ratio lengths for viewport top/bottom boundaries, including animated shared values.

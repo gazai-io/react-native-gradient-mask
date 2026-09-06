@@ -30,26 +30,24 @@
 
 ## デモ
 
-<p align="center">
-  <table>
-    <tr>
-      <td align="center"><b>iOS</b></td>
-      <td align="center"><b>Android</b></td>
-    </tr>
-    <tr>
-      <td><a href="./images/ios  Demo Video.webm"><img src="./images/ios.png" alt="iOS デモ" width="280" /></a></td>
-      <td><a href="./images/android.mp4"><img src="./images/android.png" alt="Android デモ" width="280" /></a></td>
-    </tr>
-  </table>
-</p>
+<table>
+  <tr><th>iOS</th><th>Android</th></tr>
+  <tr>
+    <td><a href="https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-ios.mp4"><img src="https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-ios.gif" alt="iOS viewport mask: screen boundaries and transparent background" width="280" /></a></td>
+    <td><a href="https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-android.mp4"><img src="https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-android.gif" alt="Android viewport mask: screen boundaries and transparent background" width="280" /></a></td>
+  </tr>
+</table>
+
+新版 Example の実録：画面中央の上端、背景切替、75% の下端、ぼかし、マスク切替。GIF をクリックすると MP4 を開きます。12 fps の GIF は性能測定ではありません。
+
 
 ## 特徴
 
 | 特徴 | 説明 |
 |------|------|
 | **クロスプラットフォーム** | iOS、Android、Web 対応 |
-| **ネイティブパフォーマンス** | iOS: `CAGradientLayer` • Android: `Bitmap` + `PorterDuff` • Web: CSS `mask-image` |
-| **Reanimated 対応** | `AnimatedGradientMaskView` で 60fps のスムーズなマスクアニメーション |
+| **ネイティブパフォーマンス** | iOS: `CAGradientLayer` • Android: `Canvas.saveLayer` + `PorterDuff` • Web: CSS `mask-image` |
+| **Reanimated 対応** | `AnimatedGradientMaskView` で UI スレッドのマスクアニメーション |
 | **柔軟な設定** | カスタムカラー、位置、方向、マスク強度 |
 | **TypeScript** | 完全な型定義付き |
 
@@ -319,7 +317,7 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 | プラットフォーム | 実装 | 状態 |
 |------------------|------|:----:|
 | iOS | `CAGradientLayer` | ✅ |
-| Android | `Bitmap` + `LinearGradient` + `PorterDuff` | ✅ |
+| Android | `Canvas.saveLayer` + `LinearGradient` + `PorterDuff` | ✅ |
 | Web | CSS `mask-image` + `linear-gradient` | ✅ |
 
 ---
@@ -339,8 +337,8 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 ## Example の検証環境
 
 主要な Example 環境はアプリと同じ Expo 56.0.17 / React Native 0.85.3 です。
-[アップグレードと検証記録](docs/validation/expo-56-upgrade.md)および
-[Expo 54 のビルド基準](docs/validation/expo-54-baseline.md)（繁体字中国語）を参照してください。
+[アップグレードと検証記録](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-56-upgrade.md)および
+[Expo 54 のビルド基準](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/expo-54-baseline.md)（繁体字中国語）を参照してください。
 環境の更新と機能の変更は別々に記録します。
 
 ## スポンサー
@@ -367,11 +365,13 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 
 ## Native chat viewport mask
 
-See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) and [validation checklist](docs/validation/viewport-checklist.md).
+See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/viewport-checklist.md).
 
 ### 0.2.0: タッチ範囲と画面基準の割合
 
 `restrictTouchesToVisibleArea` は既定で `false`。有効時は表示範囲内からのみ操作を開始でき、開始済みのドラッグは範囲外でも継続します。
 `percentageReference` は既定で `"container"`、`"screen"` で画面の高さを基準に割合を計算します。top/bottom も割合を指定でき、境界とぼかしに同じ基準を適用します。数値・px とコンテナ原点は変わりません。任意の `boundaryPercentageReference` で境界だけ別の基準にできます。
 
-[API](docs/viewport-mask.md) · [0.2.0 validation](docs/validation/release-0.2.0.md)
+[API](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md) · [0.2.0 validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/validation/release-0.2.0.md)
+
+画面中央に合わせる場合はコンテナ位置を差し引きます（Example 実装済み）。コンテナを透明にすると背面のページが見えます。[座標変換と透明背景](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.3/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo) を参照してください。

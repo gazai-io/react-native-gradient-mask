@@ -119,3 +119,20 @@ final class ScreenBoundaryUITests: XCTestCase {
         XCTAssertEqual(host.frame, originalFrame)
     }
 }
+
+// Recording choreography for the default Example; capture via simctl recordVideo.
+final class DemoRecordingUITests: XCTestCase {
+    func testRecordViewportDemo() {
+        let app = XCUIApplication(bundleIdentifier: "expo.modules.gradientmask.example")
+        app.terminate(); app.launch()
+        XCTAssertTrue(app.buttons["Top 50% screen"].waitForExistence(timeout: 15))
+        print("DEMO_RECORDING_STARTED")
+        Thread.sleep(forTimeInterval: 4)
+        for title in ["Top 50% screen", "Background: pattern", "Background: plain", "Bottom 100% ↔ 75%", "Fade 50% / 40px", "Top 0 ↔ 50%", "Mask on / off", "Mask on / off"] {
+            app.buttons[title].tap()
+            Thread.sleep(forTimeInterval: 1.5)
+        }
+        print("DEMO_RECORDING_FINISHED")
+        Thread.sleep(forTimeInterval: 2)
+    }
+}
