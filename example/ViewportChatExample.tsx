@@ -118,7 +118,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text="8-unit window" action={() => {bottomRatio.value = null; topOverride.value = height.value - 8; panel.value = 0;}}/>
       <Button text="Out of bounds" action={() => {bottomRatio.value = null; topOverride.value = -100; panel.value = -100;}}/>
       <Button text="Reverse bounds" action={() => {bottomRatio.value = null; topOverride.value = height.value; panel.value = height.value;}}/>
-      <Button text={`Touch range: ${restrictLabel ? 'visible' : 'all'}`} action={() => {restricted.value = !restricted.value; setRestrictLabel(restricted.value);}}/>
+      <Button text={`Touch range: ${restrictLabel ? 'visible' : 'all'}`} action={() => {const next = !restrictLabel; restricted.value = next; setRestrictLabel(next);}}/>
       <Button text={`%: ${percentageReference}`} action={() => measureContainer(() => setPercentageReference(percentageReference === 'container' ? 'screen' : 'container'))}/>
       <Button text={`Background: ${patternBackground ? 'pattern' : 'plain'}`} action={() => setPatternBackground(!patternBackground)}/>
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>

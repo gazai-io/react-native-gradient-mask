@@ -23,8 +23,8 @@ export default function TouchRangeScene() {
     <Pressable testID="touch-background" style={StyleSheet.absoluteFill} onPress={() => {counts.current.background++;}} />
     <Text style={styles.label}>Touch range · 300 × 400 · top {narrow ? 150 : 100} / bottom {narrow ? 250 : 300}</Text>
     <View style={styles.controls}>
-      <Pressable testID="toggle-restrict" style={styles.button} onPress={() => {restricted.value=!restricted.value; setRestrictLabel(restricted.value);}}><Text>Restrict {String(restrictLabel)}</Text></Pressable>
-      <Pressable testID="toggle-mask" style={styles.button} onPress={() => {enabled.value=!enabled.value; setMaskLabel(enabled.value);}}><Text>Mask {String(maskLabel)}</Text></Pressable>
+      <Pressable testID="toggle-restrict" style={styles.button} onPress={() => {const next=!restrictLabel; restricted.value=next; setRestrictLabel(next);}}><Text>Restrict {String(restrictLabel)}</Text></Pressable>
+      <Pressable testID="toggle-mask" style={styles.button} onPress={() => {const next=!maskLabel; enabled.value=next; setMaskLabel(next);}}><Text>Mask {String(maskLabel)}</Text></Pressable>
       <Pressable testID="toggle-bounds" style={styles.button} onPress={() => {top.value=narrow?100:150;bottom.value=narrow?300:250;setNarrow(!narrow);}}><Text>Bounds</Text></Pressable>
     </View>
     <View style={styles.controls}>
