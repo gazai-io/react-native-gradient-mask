@@ -17,3 +17,7 @@
 所有改動均為 Example、測試與整合文件；本次未修改原生套件 API 或 hit-test 實作。功能確認範圍為 iOS 26.5 / Android API 35 模擬器，並非實體裝置效能驗收。
 
 Android 原版聊天頁同樣通過 all → visible → all → visible，背景計數 0 → 1 → 1 → 2；[結果](artifacts/pass-through-retest/android-chat-results.json)、[截圖](artifacts/pass-through-retest/android-chat-button.png)。
+
+## 清楚的開關標籤
+
+現有開關改為「背景穿透：關／開」，功能與預設值不變。Android 重跑通過。iOS 首次在使用者同時操作的模擬器上，計數已增加到 14，與測試預期的 1 不符；改在獨立的 GradientMask-Label-Validation 模擬器重跑後，精確計數 0 → 1 → 1 → 2 通過，未更改測試斷言或執行碼。[iOS](artifacts/pass-through-retest/ios-clear-label-summary.json)、[Android](artifacts/pass-through-retest/android-clear-label-results.json)。後續自動互動測試應使用獨立模擬器，避免干擾使用者。
