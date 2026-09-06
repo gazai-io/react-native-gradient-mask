@@ -99,12 +99,12 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
     const text = `${width.value.toFixed(0)} × ${height.value.toFixed(0)} · top ${top.value.toFixed(1)} / bottom ${bottom.value.toFixed(1)} · fade ${String(topFeather.value)} / ${String(bottomFeather.value)}`;
     return {text, defaultValue: text};
   });
-  return <View pointerEvents="box-none" style={styles.root}>
-    <Pressable testID="chat-background" accessibilityLabel="Page background" onPress={() => setBackgroundTaps(count => count + 1)} style={StyleSheet.absoluteFill}>
+  return <View style={styles.root}>
+    <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFill}>
       {patternBackground && Array.from({length: 12}, (_, row) => <View key={row} style={{flex: 1, flexDirection: 'row'}}>
         {Array.from({length: 4}, (_, column) => <View key={column} style={{flex: 1, backgroundColor: (row + column) % 2 ? '#403057' : '#18364b'}} />)}
       </View>)}
-    </Pressable>
+    </View>
     <Text style={styles.title}>Fixed chat · viewport mask</Text>
     <AnimatedInput testID="chat-mask-metrics" editable={false} style={styles.info} animatedProps={info} />
     <View style={styles.controls}>
@@ -124,6 +124,9 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>
     </View>
     <View ref={containerRef} testID="chat-mask-container" pointerEvents="box-none" collapsable={false} style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width; measureContainer();}}>
+      <Pressable testID="chat-background-button" onPress={() => setBackgroundTaps(count => count + 1)} style={styles.backgroundButton}>
+        <Text testID="chat-background-taps" style={styles.buttonText}>背景按鈕 · 點擊 {backgroundTaps} 次</Text>
+      </Pressable>
       <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={topInput} bottom={bottomInput} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled} restrictTouchesToVisibleArea={restricted} percentageReference={percentageReference}>
         <ChatList data={data} offset={offset}/>
       </AnimatedViewportMaskView>
@@ -131,7 +134,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Animated.View testID="chat-bottom-line" collapsable={false} pointerEvents="none" style={[styles.line, styles.bottomLine, bottomLine]}/>
       <Animated.View pointerEvents="none" style={[styles.panel, panelStyle]}><Text style={styles.info}>Simulated bottom panel</Text></Animated.View>
     </View>
-    <Text testID="chat-background-taps" style={styles.diagnostics}>Background taps: {backgroundTaps} · {diagnostics}</Text>
+    <Text style={styles.diagnostics}>{diagnostics}</Text>
     <Text style={styles.diagnostics}>Cyan: top · Pink: bottom. Rapidly tap Top to reverse mid-animation. App owns scroll anchoring and touch exclusion.</Text>
   </View>;
 }
@@ -140,6 +143,7 @@ const styles = StyleSheet.create({
   root: {flex: 1, padding: 10}, title: {color: 'white', fontSize: 18, fontWeight: '600'},
   info: {color: 'white', fontSize: 11, padding: 4}, controls: {flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginVertical: 8},
   button: {backgroundColor: '#293d59', padding: 8, borderRadius: 5}, buttonText: {color: 'white', fontSize: 11},
+  backgroundButton: {position: 'absolute', top: 20, left: 20, right: 20, height: 44, borderRadius: 6, backgroundColor: '#293d59', alignItems: 'center', justifyContent: 'center'},
   container: {flex: 1, backgroundColor: 'transparent', overflow: 'hidden'}, row: {margin: 6, padding: 12, backgroundColor: '#e3eaf4', borderRadius: 6},
   line: {position: 'absolute', left: 0, right: 0, top: 0, height: 1, backgroundColor: '#00ffff'}, bottomLine: {backgroundColor: '#ff55bb'},
   panel: {position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#35445bbb'}, diagnostics: {color: '#b4c4d7', fontSize: 10, marginTop: 5},
