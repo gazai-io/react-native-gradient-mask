@@ -55,6 +55,14 @@ try:
     actual=status();assert actual['offset']>50,actual
     results.append({'case':'inside drag continues outside','actual':actual,'pass':True})
     screenshot('touch-drag')
+    reset();tap('percent-bounds');tap('toggle-restrict')
+    tap_y(125);tap_y(325);check('container percentage boundaries gate both ends',content=1,background=1)
+    original_host=host[:]
+    tap('toggle-reference');tap_y(125);tap_y(325);check('screen percentage boundaries gate both ends',content=2,background=2)
+    tap('separate-bounds');tap_y(125);tap_y(325);check('boundary reference overrides common screen setting',content=3,background=3)
+    assert bounds('touch-host')==original_host
+    screenshot('boundary-percentage')
+    reset()
     x1,y1,x2,y2=bounds('reference-oracle')
     sample=((x1+x2)//2,round(y1+(y2-y1)*30/120))
     before=screenshot('percentage-container')

@@ -371,6 +371,6 @@ See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) a
 ### 0.2.0：可選觸控範圍與螢幕百分比
 
 `restrictTouchesToVisibleArea` 預設 `false`；開啟後只允許在可視範圍內開始新觸控，已開始的拖曳移出範圍仍會繼續，羽化區可操作。
-`percentageReference` 預設 `"container"`，可設為 `"screen"` 讓百分比／ratio 羽化使用 RN 螢幕高度。數值／px 不變，`top`／`bottom` 仍是容器內座標。
+`percentageReference` 預設 `"container"`，可設為 `"screen"` 讓百分比／ratio 邊界與羽化使用 RN 螢幕高度。`top`／`bottom` 也接受 `"50%"`，原點仍是容器頂端；數值／px 不變。可選 `boundaryPercentageReference` 僅覆寫邊界基準，不填就共用 `percentageReference`。
 
 詳見 [API 與範例](docs/viewport-mask.md)及 [0.2.0 驗證](docs/validation/release-0.2.0.md)。

@@ -23,27 +23,28 @@ const feather = useSharedValue(40);
 </View>
 ```
 
-The App calculates its 50% line from the measured **container**, not the screen. `bottom` is an absolute coordinate in that container, **not** a bottom inset. The list fills the same container throughout the animation. The mask never calls scroll methods, compensates offsets, changes message data, or remounts children.
+The example above calculates its numeric 50% line from the measured container. Alternatively pass `top="50%"` and select the percentage reference. `bottom` is an absolute coordinate in that container, **not** a bottom inset. The list fills the same container throughout the animation. The mask never calls scroll methods, compensates offsets, changes message data, or remounts children.
 
 | Parameter | Static value | Animated value | Default |
 | --- | --- | --- | --- |
-| `top` | number | number / shared / derived value | required |
-| `bottom` | number | number / shared / derived value | required |
+| `top` | `MaskLength` | static / shared / derived length | required |
+| `bottom` | `MaskLength` | static / shared / derived length | required |
 | `topFeather` | `MaskLength` | static / shared / derived length | 0 |
 | `bottomFeather` | `MaskLength` | static / shared / derived length | 0 |
 | `restrictTouchesToVisibleArea` | boolean | static / shared / derived boolean | false |
 | `percentageReference` | `container` / `screen` | static / shared / derived reference | container |
+| `boundaryPercentageReference` | `container` / `screen` | static / shared / derived reference | inherits percentageReference |
 | `enabled` | boolean | static / shared / derived boolean | true |
 
-Numbers and `"40px"` mean React Native layout units (iOS points / Android dp), not screenshot physical pixels. A length may also be `"50%"`, `{ value: .5, unit: 'ratio' }`, `{ value: 50, unit: 'percent' }`, or `{ value: 40, unit: 'px' }`. Feather percentages resolve against the current **container height** by default, before overlap clamping. Set `percentageReference="screen"` to use `Dimensions.get('screen').height` in RN layout units. Screen size changes are subscribed to; keyboard/window changes do not redefine this as usable content height. Computed numbers such as `containerHeight * .3` work directly. Different units may be used on the two edges simultaneously.
+Numbers and `"40px"` mean React Native layout units (iOS points / Android dp), not screenshot physical pixels. A length may also be `"50%"`, `{ value: .5, unit: 'ratio' }`, `{ value: 50, unit: 'percent' }`, or `{ value: 40, unit: 'px' }`. Boundary and feather percentages resolve against the current **container height** by default, before overlap clamping. Set `percentageReference="screen"` to use `Dimensions.get('screen').height` in RN layout units. Screen size changes are subscribed to; keyboard/window changes do not redefine this as usable content height. Computed numbers such as `containerHeight * .3` work directly. Different units may be used on the two edges simultaneously.
 
-`top` and `bottom` intentionally accept numeric coordinates only. `topFeather="50%" bottomFeather="40px"` controls feather lengths; it does not position the visible top at 50%. Product definitions of “40px / 40%” are not inferred or fixed by this package.
+`top` and `bottom` accept numbers, px, percentages, and ratio objects. `percentageReference` is shared by boundaries and feathers; optional `boundaryPercentageReference` overrides only boundaries. `topFeather="50%" bottomFeather="40px"` controls feather lengths; it does not position the visible top at 50%. Product definitions of “40px / 40%” are not inferred or fixed by this package.
 
 ## Clamp and alpha rules
 
 For actual native container height `H`:
 
-1. Non-finite coordinates become 0. Clamp `top` to `[0,H]`; clamp `bottom` to `[top,H]`. Inverted bounds produce an empty visible interval, never a reversed gradient.
+1. Resolve percentage/ratio coordinates against their selected reference; clamp input ratios to `[0,1]`. Non-finite coordinates become 0. Clamp `top` to `[0,H]`; clamp `bottom` to `[top,H]`. Inverted bounds produce an empty visible interval, never a reversed gradient.
 2. Negative/non-finite feather lengths become 0. Percentages/ratios clamp to `[0,1]` and multiply the selected container/screen height. Each resolved feather then clamps to `[0,H]`.
 3. Let `V = bottom - top`. If `topFeather + bottomFeather > V`, scale **both** by `V / sum`. Their ratio is preserved and they meet at one fully opaque point. `V=0` hides all content.
 4. Outside `[top,bottom]`, alpha is 0. Inside, the top feather rises from 0 to 1, the bottom feather falls from 1 to 0, and the middle is fully opaque. Zero feather creates a hard edge.
@@ -98,3 +99,23 @@ Build modes (set **before** producing the native Release JS bundle):
 The benchmark reports frame-callback frequency, p95/max interval, intervals over 25ms, and content render count. These are UI scheduling diagnostics, **not GPU frame completion or a physical-device performance certificate**. Collect Android `dumpsys gfxinfo ... framestats` / Perfetto and iOS Instruments Animation Hitches/Core Animation on real product devices, with the same Release build, thermal state, refresh rate, list, and scrolling. Run mask-disabled/enabled comparisons in both orders and retain raw traces. The JS stall is a deliberately adverse scenario; exclude it from normal scrolling acceptance.
 
 See [validation and outstanding requirements](validation/viewport-checklist.md) for actual evidence and limits.
+
+## Shared or separate references (0.2.2)
+
+```tsx
+// Shared screen basis: control only top and bottom for the moving visible window.
+<AnimatedViewportMaskView
+  percentageReference="screen"
+  top={top} bottom={bottom}
+  topFeather={40} bottomFeather={40}
+/>
+// Optional separation: screen-based feathers, container-based boundaries.
+<ViewportMaskView
+  percentageReference="screen" boundaryPercentageReference="container"
+  top="25%" bottom="75%" topFeather="10%" bottomFeather={40}
+/>
+```
+
+Both boundaries are measured downward from the **container origin**. With an 800-unit screen, `top="50%"` in screen mode requests local y=400, then clamps to the actual container. It does not measure the container's screen position or automatically align to the physical screen midpoint. To align an absolute screen line, the App passes `screenLineY - containerScreenY` as a numeric coordinate. `bottom={40}` is y=40, not a 40-unit inset; use `bottom={containerHeight - 40}` for that inset.
+
+The Chat viewport `%: container/screen` toggle now changes both percentage boundaries and feathers. Press `Top 0 ↔ 50%` to animate the top boundary using the selected reference; `Bottom panel` remains an App-calculated numeric bottom coordinate. Reference lines show the clamped position. The old README videos have not been re-recorded.

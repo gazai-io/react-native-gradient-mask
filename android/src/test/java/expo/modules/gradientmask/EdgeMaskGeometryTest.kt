@@ -30,4 +30,10 @@ class EdgeMaskGeometryTest {
         assertEquals(1f, EdgeMaskGeometry.scale(0f, 0f, 0f), 0f)
         assertEquals(0f, EdgeMaskGeometry.opacity(Double.NaN), 0f)
     }
+    @org.junit.Test fun percentageBoundaryTouches() {
+        org.junit.Assert.assertTrue(EdgeMaskGeometry.containsTouch(250f, .25, .75, 800f, 2f, true, true))
+        org.junit.Assert.assertFalse(EdgeMaskGeometry.containsTouch(650f, .25, .75, 800f, 2f, true, true))
+        org.junit.Assert.assertFalse(EdgeMaskGeometry.containsTouch(250f, 200.0, 600.0, 800f, 2f))
+        org.junit.Assert.assertTrue(EdgeMaskGeometry.containsTouch(650f, 200.0, 600.0, 800f, 2f))
+    }
 }

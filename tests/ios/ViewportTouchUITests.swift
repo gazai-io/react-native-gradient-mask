@@ -42,6 +42,19 @@ final class ViewportTouchUITests: XCTestCase {
         }
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: status)], timeout: 5), .completed)
     }
+    func testPercentageBoundariesShareOrOverrideReference() {
+        button("percent-bounds"); button("toggle-restrict")
+        point(125).tap(); statusContains("content=1")
+        point(325).tap(); statusContains("background=1")
+        let frame = app.otherElements["touch-host"].frame
+        button("toggle-reference")
+        point(125).tap(); statusContains("background=2")
+        point(325).tap(); statusContains("content=2")
+        button("separate-bounds")
+        point(125).tap(); statusContains("content=3")
+        point(325).tap(); statusContains("background=3")
+        XCTAssertEqual(app.otherElements["touch-host"].frame, frame)
+    }
     func sample(_ point: CGPoint) -> Int {
         let cg = app.screenshot().image.cgImage!
         let data = cg.dataProvider!.data! as Data

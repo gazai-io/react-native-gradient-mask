@@ -1,16 +1,19 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Dimensions, Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
-import {AnimatedViewportMaskView, GradientMaskView, type MaskPercentageReference} from 'react-native-gradient-mask';
+import {AnimatedViewportMaskView, GradientMaskView, type MaskLength, type MaskPercentageReference} from 'react-native-gradient-mask';
 export default function TouchRangeScene() {
   const restricted = useSharedValue(false);
   const enabled = useSharedValue(true);
-  const top = useSharedValue(100);
-  const bottom = useSharedValue(300);
+  const top = useSharedValue<MaskLength>(100);
+  const bottom = useSharedValue<MaskLength>(300);
   const [restrictLabel, setRestrictLabel] = useState(false);
   const [maskLabel, setMaskLabel] = useState(true);
   const [narrow, setNarrow] = useState(false);
   const [reference, setReference] = useState<MaskPercentageReference>('container');
+  const boundaryReference = useSharedValue<MaskPercentageReference>('container');
+  const [percentBounds, setPercentBounds] = useState(false);
+  const [separate, setSeparate] = useState(false);
   const counts = useRef({content: 0, background: 0, offset: 0});
   const [status, setStatus] = useState('content=0 background=0 offset=0');
   const onPress = useCallback(() => {counts.current.content++;}, []);
@@ -22,10 +25,14 @@ export default function TouchRangeScene() {
       <Pressable testID="toggle-mask" style={styles.button} onPress={() => {enabled.value=!enabled.value; setMaskLabel(enabled.value);}}><Text>Mask {String(maskLabel)}</Text></Pressable>
       <Pressable testID="toggle-bounds" style={styles.button} onPress={() => {top.value=narrow?100:150;bottom.value=narrow?300:250;setNarrow(!narrow);}}><Text>Bounds</Text></Pressable>
     </View>
+    <View style={styles.controls}>
+      <Pressable testID="percent-bounds" style={styles.button} onPress={() => {top.value='25%';bottom.value='75%';setPercentBounds(true);}}><Text>Bounds 25% / 75%</Text></Pressable>
+      <Pressable testID="separate-bounds" style={styles.button} onPress={() => {boundaryReference.value='container';setSeparate(!separate);}}><Text>Separate {String(separate)}</Text></Pressable>
+    </View>
     <Text testID="touch-status" accessibilityLabel={status} style={styles.label}>{status}</Text>
     <View testID="touch-host" collapsable={false} style={styles.host}>
       <Pressable testID="touch-background" style={StyleSheet.absoluteFill} onPress={() => {counts.current.background++;}} />
-      <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={top} bottom={bottom} topFeather={40} bottomFeather={40} enabled={enabled} restrictTouchesToVisibleArea={restricted}>
+      <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={top} bottom={bottom} percentageReference={percentBounds ? reference : undefined} boundaryPercentageReference={separate ? boundaryReference : undefined} topFeather={40} bottomFeather={40} enabled={enabled} restrictTouchesToVisibleArea={restricted}>
         <ScrollView testID="touch-list" scrollEventThrottle={100} onScroll={event => {counts.current.offset=event.nativeEvent.contentOffset.y;}}>
           {Array.from({length:24},(_,i)=><Pressable key={i} testID={`touch-row-${i}`} style={styles.row} onPress={onPress}><Text>Row {i}</Text></Pressable>)}
         </ScrollView>

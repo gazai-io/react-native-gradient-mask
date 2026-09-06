@@ -383,6 +383,6 @@ See [opt-in viewport API, coordinate rules and Example](docs/viewport-mask.md) a
 ```
 
 Defaults: `percentageReference="container"`, `restrictTouchesToVisibleArea={false}`.
-Screen percentages use RN screen height; numbers/px and local top/bottom coordinates are unchanged.
+Screen percentages use RN screen height for both boundaries and feathers. `top` / `bottom` accept MaskLength (including percentages), measured from the container origin. Numbers/px are unchanged. Optional `boundaryPercentageReference` overrides only boundaries; otherwise they inherit `percentageReference`.
 Touch restriction checks new gesture starts only; an active drag continues outside the visible interval.
 See [0.2.0 validation](docs/validation/release-0.2.0.md).
