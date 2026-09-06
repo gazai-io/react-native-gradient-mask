@@ -86,3 +86,36 @@ final class ViewportTouchUITests: XCTestCase {
         attachment.name = "screen-percentage-oracle"; attachment.lifetime = .keepAlways; add(attachment)
     }
 }
+
+// Run against the default Example (EXPO_PUBLIC_MASK_VALIDATION unset).
+final class ScreenBoundaryUITests: XCTestCase {
+    let app = XCUIApplication(bundleIdentifier: "expo.modules.gradientmask.example")
+    func testScreenLinesUseAbsoluteScreenPosition() {
+        continueAfterFailure = false
+        app.terminate(); app.launch()
+        let host = app.otherElements["chat-mask-container"]
+        XCTAssertTrue(host.waitForExistence(timeout: 15))
+        let originalFrame = host.frame
+        let topButton = app.buttons["Top 50% screen"]
+        XCTAssertTrue(topButton.exists)
+        topButton.tap()
+        let topLine = app.otherElements["chat-top-line"]
+        let screenMid = app.frame.midY
+        let topAligned = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            abs(topLine.frame.minY - screenMid) < 1
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [topAligned], timeout: 5), .completed)
+        print("SCREEN_BOUNDARY top=\(topLine.frame.minY) expected=\(screenMid) containerY=\(host.frame.minY)")
+        let topShot = XCTAttachment(screenshot: app.screenshot())
+        topShot.name = "top-screen-midpoint"; topShot.lifetime = .keepAlways; add(topShot)
+        app.buttons["Bottom 100% ↔ 75%"].tap()
+        let bottomLine = app.otherElements["chat-bottom-line"]
+        let expectedBottom = app.frame.minY + app.frame.height * 0.75
+        let bottomAligned = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            abs(bottomLine.frame.minY - expectedBottom) < 1
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [bottomAligned], timeout: 5), .completed)
+        print("SCREEN_BOUNDARY bottom=\(bottomLine.frame.minY) expected=\(expectedBottom)")
+        XCTAssertEqual(host.frame, originalFrame)
+    }
+}

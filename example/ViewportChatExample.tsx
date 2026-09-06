@@ -23,10 +23,19 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const sequence = useRef(0);
   const height = useSharedValue(0);
   const width = useSharedValue(0);
+  const containerRef = useRef<View>(null);
+  const containerScreenY = useSharedValue(0);
+  const measureContainer = useCallback((after?: () => void) => {
+    containerRef.current?.measureInWindow((_x, y) => {
+      containerScreenY.value = y;
+      after?.();
+    });
+  }, [containerScreenY]);
   const topProgress = useSharedValue(0);
   const topOverride = useSharedValue<number | null>(null);
   const [screenHeight, setScreenHeight] = useState(() => Dimensions.get('screen').height);
   useEffect(() => { const sub = Dimensions.addEventListener('change', ({screen}) => setScreenHeight(screen.height)); return () => sub.remove(); }, []);
+  useEffect(() => { const frame = requestAnimationFrame(() => measureContainer()); return () => cancelAnimationFrame(frame); }, [screenHeight, measureContainer]);
   const panel = useSharedValue(0);
   const bottomRatio = useSharedValue<number | null>(null);
   const topFeather = useSharedValue<MaskLength>(40);
@@ -35,10 +44,10 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const restricted = useSharedValue(false);
   const [restrictLabel, setRestrictLabel] = useState(false);
   const [percentageReference, setPercentageReference] = useState<MaskPercentageReference>('container');
-  const topInput = useDerivedValue<MaskLength>(() => topOverride.value ?? {value: topProgress.value * .5, unit: 'ratio'});
-  const top = useDerivedValue(() => topOverride.value ?? topProgress.value * .5 * (percentageReference === 'screen' ? screenHeight : height.value));
-  const bottomInput = useDerivedValue<MaskLength>(() => bottomRatio.value === null ? height.value - panel.value : {value: bottomRatio.value, unit: 'ratio'});
-  const bottom = useDerivedValue(() => bottomRatio.value === null ? height.value - panel.value : bottomRatio.value * (percentageReference === 'screen' ? screenHeight : height.value));
+  const topInput = useDerivedValue<MaskLength>(() => topOverride.value ?? (percentageReference === 'screen' ? topProgress.value * Math.max(0, screenHeight * .5 - containerScreenY.value) : {value: topProgress.value * .5, unit: 'ratio'}));
+  const top = useDerivedValue(() => topOverride.value ?? topProgress.value * (percentageReference === 'screen' ? Math.max(0, screenHeight * .5 - containerScreenY.value) : height.value * .5));
+  const bottomInput = useDerivedValue<MaskLength>(() => bottomRatio.value === null ? height.value - panel.value : percentageReference === 'screen' ? bottomRatio.value * screenHeight - containerScreenY.value : {value: bottomRatio.value, unit: 'ratio'});
+  const bottom = useDerivedValue(() => bottomRatio.value === null ? height.value - panel.value : bottomRatio.value * (percentageReference === 'screen' ? screenHeight : height.value) - (percentageReference === 'screen' ? containerScreenY.value : 0));
   const offset = useSharedValue(0);
   const mid = useRef(false);
   const panelOn = useRef(false);
@@ -88,11 +97,11 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   });
   return <View style={styles.root}>
     <Text style={styles.title}>Fixed chat · viewport mask</Text>
-    <AnimatedInput editable={false} style={styles.info} animatedProps={info} />
+    <AnimatedInput testID="chat-mask-metrics" editable={false} style={styles.info} animatedProps={info} />
     <View style={styles.controls}>
       <Button text="Top 0 ↔ 50%" action={toggleTop}/><Button text="Bottom panel" action={togglePanel}/>
-      <Button text="Top 50% screen" action={() => {setPercentageReference('screen'); mid.current = true; topOverride.value = null; topProgress.value = withTiming(1, {duration: 800});}}/>
-      <Button text="Bottom 100% ↔ 75%" action={() => {bottomMid.current = !bottomMid.current; if (bottomRatio.value === null) { const base = percentageReference === 'screen' ? screenHeight : height.value; bottomRatio.value = base > 0 ? (height.value - panel.value) / base : 0; } bottomRatio.value = withTiming(bottomMid.current ? .75 : 1, {duration: 700});}}/>
+      <Button text="Top 50% screen" action={() => measureContainer(() => {setPercentageReference('screen'); mid.current = true; topOverride.value = null; topProgress.value = withTiming(1, {duration: 800});})}/>
+      <Button text="Bottom 100% ↔ 75%" action={() => {bottomMid.current = !bottomMid.current; if (bottomRatio.value === null) { const base = percentageReference === 'screen' ? screenHeight : height.value; bottomRatio.value = base > 0 ? (height.value - panel.value + (percentageReference === 'screen' ? containerScreenY.value : 0)) / base : 0; } bottomRatio.value = withTiming(bottomMid.current ? .75 : 1, {duration: 700});}}/>
       <Button text={streaming ? 'Stop typing' : 'Type characters'} action={() => setStreaming(!streaming)}/>
       <Button text="Append" action={append}/><Button text="Prepend" action={prepend}/>
       <Button text="Fade 0 / 40" action={() => {topFeather.value = topFeather.value === 0 ? 40 : 0; bottomFeather.value = topFeather.value;}}/>
@@ -101,15 +110,15 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text="Out of bounds" action={() => {bottomRatio.value = null; topOverride.value = -100; panel.value = -100;}}/>
       <Button text="Reverse bounds" action={() => {bottomRatio.value = null; topOverride.value = height.value; panel.value = height.value;}}/>
       <Button text={`Touch range: ${restrictLabel ? 'visible' : 'all'}`} action={() => {restricted.value = !restricted.value; setRestrictLabel(restricted.value);}}/>
-      <Button text={`%: ${percentageReference}`} action={() => setPercentageReference(percentageReference === 'container' ? 'screen' : 'container')}/>
+      <Button text={`%: ${percentageReference}`} action={() => measureContainer(() => setPercentageReference(percentageReference === 'container' ? 'screen' : 'container'))}/>
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>
     </View>
-    <View style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width;}}>
+    <View ref={containerRef} testID="chat-mask-container" collapsable={false} style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width; measureContainer();}}>
       <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={topInput} bottom={bottomInput} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled} restrictTouchesToVisibleArea={restricted} percentageReference={percentageReference}>
         <ChatList data={data} offset={offset}/>
       </AnimatedViewportMaskView>
-      <Animated.View pointerEvents="none" style={[styles.line, topLine]}/>
-      <Animated.View pointerEvents="none" style={[styles.line, styles.bottomLine, bottomLine]}/>
+      <Animated.View testID="chat-top-line" collapsable={false} pointerEvents="none" style={[styles.line, topLine]}/>
+      <Animated.View testID="chat-bottom-line" collapsable={false} pointerEvents="none" style={[styles.line, styles.bottomLine, bottomLine]}/>
       <Animated.View pointerEvents="none" style={[styles.panel, panelStyle]}><Text style={styles.info}>Simulated bottom panel</Text></Animated.View>
     </View>
     <Text style={styles.diagnostics}>{diagnostics}</Text>
