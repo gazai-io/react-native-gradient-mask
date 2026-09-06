@@ -116,3 +116,27 @@ test('screen reference changes only percentages and ratios, using live screen he
   assert.equal(viewport.bottomHeight, 40);
   assert.equal(nativeMaskProps({...base, percentageReference: 'screen'}, NaN).topHeight, 0);
 });
+
+
+test('boundary percentages share the reference, with an independent optional override', () => {
+  const input = {top: '50%', bottom: {value: .75, unit: 'ratio'}, topFeather: '10%', bottomFeather: '40px'};
+  const container = viewportMaskProps(input, 800);
+  assert.equal(container.visibleTop, .5);
+  assert.equal(container.visibleTopRatio, true);
+  assert.equal(container.visibleBottom, .75);
+  assert.equal(container.visibleBottomRatio, true);
+  const screen = viewportMaskProps({...input, percentageReference: 'screen'}, 800);
+  assert.equal(screen.visibleTop, 400);
+  assert.equal(screen.visibleBottom, 600);
+  assert.equal(screen.visibleTopRatio, false);
+  assert.equal(screen.topHeight, 80);
+  assert.equal(screen.bottomHeight, 40);
+  const separate = viewportMaskProps({...input, percentageReference: 'screen', boundaryPercentageReference: 'container'}, 800);
+  assert.equal(separate.visibleTop, .5);
+  assert.equal(separate.visibleTopRatio, true);
+  assert.equal(separate.topHeight, 80);
+  const inverse = viewportMaskProps({...input, boundaryPercentageReference: 'screen'}, 1000);
+  assert.equal(inverse.visibleTop, 500);
+  assert.equal(inverse.topHeightRatio, true);
+  assert.equal(viewportMaskProps({top: '40px', bottom: 350, percentageReference: 'screen'}, 800).visibleTop, 40);
+});

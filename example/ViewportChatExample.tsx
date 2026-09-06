@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import Animated, { useAnimatedProps, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 import { AnimatedViewportMaskView, type MaskLength, type MaskPercentageReference } from 'react-native-gradient-mask';
@@ -23,7 +23,10 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const sequence = useRef(0);
   const height = useSharedValue(0);
   const width = useSharedValue(0);
-  const top = useSharedValue(0);
+  const topProgress = useSharedValue(0);
+  const topOverride = useSharedValue<number | null>(null);
+  const [screenHeight, setScreenHeight] = useState(() => Dimensions.get('screen').height);
+  useEffect(() => { const sub = Dimensions.addEventListener('change', ({screen}) => setScreenHeight(screen.height)); return () => sub.remove(); }, []);
   const panel = useSharedValue(0);
   const bottom = useDerivedValue(() => height.value - panel.value);
   const topFeather = useSharedValue<MaskLength>(40);
@@ -32,10 +35,12 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const restricted = useSharedValue(false);
   const [restrictLabel, setRestrictLabel] = useState(false);
   const [percentageReference, setPercentageReference] = useState<MaskPercentageReference>('container');
+  const topInput = useDerivedValue<MaskLength>(() => topOverride.value ?? {value: topProgress.value * .5, unit: 'ratio'});
+  const top = useDerivedValue(() => topOverride.value ?? topProgress.value * .5 * (percentageReference === 'screen' ? screenHeight : height.value));
   const offset = useSharedValue(0);
   const mid = useRef(false);
   const panelOn = useRef(false);
-  const toggleTop = useCallback(() => { mid.current = !mid.current; top.value = withTiming(mid.current ? height.value * .5 : 0, {duration: 800}); }, [height, top]);
+  const toggleTop = useCallback(() => { mid.current = !mid.current; topOverride.value = null; topProgress.value = withTiming(mid.current ? 1 : 0, {duration: 800}); }, [topOverride, topProgress]);
   const togglePanel = useCallback(() => { panelOn.current = !panelOn.current; panel.value = withTiming(panelOn.current ? Math.min(120, height.value * .4) : 0, {duration: 700}); }, [height, panel]);
   const append = useCallback(() => { const id = `new-${++sequence.current}`; setData(rows => [...rows, {id, text: 'Appended message'}]); }, []);
   const prepend = useCallback(() => { const id = `history-${++sequence.current}`; setData(rows => [{id, text: 'Prepended history (App owns anchoring)'}, ...rows]); }, []);
@@ -64,13 +69,13 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       if (step === 4) append();
       if (step === 5) prepend();
       if (step === 6) { topFeather.value = 0; bottomFeather.value = 0; toggleTop(); }
-      if (step === 7) { top.value = height.value - 8; panel.value = 0; topFeather.value = 40; bottomFeather.value = 40; }
-      if (step === 8) { top.value = -100; panel.value = -100; }
-      if (step === 9) { top.value = height.value + 100; }
-      if (step === 10) { top.value = 0; panel.value = 0; setStreaming(false); clearInterval(timer); }
+      if (step === 7) { topOverride.value = height.value - 8; panel.value = 0; topFeather.value = 40; bottomFeather.value = 40; }
+      if (step === 8) { topOverride.value = -100; panel.value = -100; }
+      if (step === 9) { topOverride.value = height.value + 100; }
+      if (step === 10) { topOverride.value = 0; panel.value = 0; setStreaming(false); clearInterval(timer); }
     }, 3000);
     return () => clearInterval(timer);
-  }, [automatic, toggleTop, togglePanel, append, prepend, top, panel, height, topFeather, bottomFeather]);
+  }, [automatic, toggleTop, togglePanel, append, prepend, top, panel, height, topFeather, bottomFeather, topOverride]);
   const topLine = useAnimatedStyle(() => ({transform: [{translateY: Math.max(0, Math.min(height.value, top.value))}]}));
   const bottomLine = useAnimatedStyle(() => ({transform: [{translateY: Math.max(0, Math.min(height.value, bottom.value))}]}));
   const panelStyle = useAnimatedStyle(() => ({height: Math.max(0, panel.value)}));
@@ -87,15 +92,15 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
       <Button text="Append" action={append}/><Button text="Prepend" action={prepend}/>
       <Button text="Fade 0 / 40" action={() => {topFeather.value = topFeather.value === 0 ? 40 : 0; bottomFeather.value = topFeather.value;}}/>
       <Button text="Fade 50% / 40px" action={() => {topFeather.value = '50%'; bottomFeather.value = '40px';}}/>
-      <Button text="8-unit window" action={() => {top.value = height.value - 8; panel.value = 0;}}/>
-      <Button text="Out of bounds" action={() => {top.value = -100; panel.value = -100;}}/>
-      <Button text="Reverse bounds" action={() => {top.value = height.value; panel.value = height.value;}}/>
+      <Button text="8-unit window" action={() => {topOverride.value = height.value - 8; panel.value = 0;}}/>
+      <Button text="Out of bounds" action={() => {topOverride.value = -100; panel.value = -100;}}/>
+      <Button text="Reverse bounds" action={() => {topOverride.value = height.value; panel.value = height.value;}}/>
       <Button text={`Touch range: ${restrictLabel ? 'visible' : 'all'}`} action={() => {restricted.value = !restricted.value; setRestrictLabel(restricted.value);}}/>
       <Button text={`%: ${percentageReference}`} action={() => setPercentageReference(percentageReference === 'container' ? 'screen' : 'container')}/>
       <Button text="Mask on / off" action={() => {enabled.value = !enabled.value;}}/>
     </View>
     <View style={styles.container} onLayout={event => {height.value = event.nativeEvent.layout.height; width.value = event.nativeEvent.layout.width;}}>
-      <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={top} bottom={bottom} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled} restrictTouchesToVisibleArea={restricted} percentageReference={percentageReference}>
+      <AnimatedViewportMaskView style={StyleSheet.absoluteFill} top={topInput} bottom={bottom} topFeather={topFeather} bottomFeather={bottomFeather} enabled={enabled} restrictTouchesToVisibleArea={restricted} percentageReference={percentageReference}>
         <ChatList data={data} offset={offset}/>
       </AnimatedViewportMaskView>
       <Animated.View pointerEvents="none" style={[styles.line, topLine]}/>

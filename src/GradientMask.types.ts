@@ -65,6 +65,8 @@ export type GradientMaskViewProps = ViewProps & {
 export type ViewportMaskViewProps = ViewProps & {
   /** Percentage / ratio reference for boundaries and feathers. Numeric coordinates are unchanged. */
   percentageReference?: MaskPercentageReference;
+  /** Optional boundary-only override; defaults to percentageReference. */
+  boundaryPercentageReference?: MaskPercentageReference;
   /** Visible top coordinate from container origin; percentages use percentageReference. */
   top: MaskLength;
   /** Visible bottom coordinate from container origin (not a bottom inset). */
