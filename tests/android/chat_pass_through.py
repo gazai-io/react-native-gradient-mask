@@ -25,9 +25,9 @@ def count(expected):
  label=node('chat-background-taps').get('text');assert label==f'背景按鈕 · 點擊 {expected} 次',label
 call('shell','am','force-stop','expo.modules.gradientmask.example');call('shell','am','start','-n','expo.modules.gradientmask.example/.MainActivity')
 tap('Top 50% screen');tap('chat-background-button');count(0)
-tap('Touch range: all');tap('chat-background-button');count(1)
-tap('Touch range: visible');tap('chat-background-button');count(1)
-tap('Touch range: all');tap('chat-background-button');count(2)
+tap('背景穿透：關');tap('chat-background-button');count(1)
+tap('背景穿透：開');tap('chat-background-button');count(1)
+tap('背景穿透：關');tap('chat-background-button');count(2)
 (out/'chat-button.png').write_bytes(call('exec-out','screencap','-p'))
 result={'defaultBlocksBackground':True,'visibleAllowsBackground':True,'switchBackBlocksAgain':True,'switchOnAgainWorks':True,'backgroundTaps':2}
 (out/'results.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

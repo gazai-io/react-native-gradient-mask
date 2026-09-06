@@ -184,6 +184,6 @@ MP4s are real simulator recordings. GIFs use a 360px width and 12 fps with a 128
 </View>
 ```
 
-The normal Chat viewport keeps its existing layout and adds only one button behind the list. Press **Top 50% screen** to reveal it, then switch **Touch range: all** to **Touch range: visible**. Tapping the exposed button now increases its own count; with restriction disabled, the hidden list still receives that touch. This is an actual background Pressable, not a synthesized mask callback.
+The normal Chat viewport keeps its existing layout and adds only one button behind the list. Press **Top 50% screen** to reveal it, then switch **背景穿透：關** to **背景穿透：開**. Tapping the exposed button now increases its own count; with restriction disabled, the hidden list still receives that touch. This is an actual background Pressable, not a synthesized mask callback.
 
 The opt-in `touch` validation scene additionally compares `Wrapper: auto` and `Wrapper: box-none` against a Pressable behind the entire container, with upper/lower bounds, feathers, dynamic percentages, and existing drags. The normal Example does not add a test tab or test controls.

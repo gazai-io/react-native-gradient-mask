@@ -162,16 +162,16 @@ final class ChatPassThroughUITests: XCTestCase {
         }
         app.buttons["Top 50% screen"].tap()
         point(42).tap(); expect(0) // restriction disabled: list keeps the touch
-        app.buttons["Touch range: all"].tap()
-        XCTAssertTrue(app.buttons["Touch range: visible"].waitForExistence(timeout: 5))
+        app.buttons["背景穿透：關"].tap()
+        XCTAssertTrue(app.buttons["背景穿透：開"].waitForExistence(timeout: 5))
         point(42).tap(); expect(1) // restriction enabled: underlying page receives it
         let topY = app.otherElements["chat-top-line"].frame.minY - host.frame.minY
         point(topY + 10).tap(); expect(1) // feather is still interactive list area
-        app.buttons["Touch range: visible"].tap()
-        XCTAssertTrue(app.buttons["Touch range: all"].waitForExistence(timeout: 5))
+        app.buttons["背景穿透：開"].tap()
+        XCTAssertTrue(app.buttons["背景穿透：關"].waitForExistence(timeout: 5))
         point(42).tap(); expect(1)
-        app.buttons["Touch range: all"].tap()
-        XCTAssertTrue(app.buttons["Touch range: visible"].waitForExistence(timeout: 5))
+        app.buttons["背景穿透：關"].tap()
+        XCTAssertTrue(app.buttons["背景穿透：開"].waitForExistence(timeout: 5))
         point(42).tap(); expect(2)
         app.buttons["Bottom 100% ↔ 75%"].tap()
         point(host.frame.height - 25).tap(); expect(2) // no background button at this position
