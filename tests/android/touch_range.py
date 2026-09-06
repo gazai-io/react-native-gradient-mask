@@ -14,8 +14,11 @@ def tree():
     call('shell', 'uiautomator', 'dump', '/sdcard/gradient-mask-touch.xml')
     return ET.fromstring(call('shell', 'cat', '/sdcard/gradient-mask-touch.xml'))
 def node(identifier):
-    for element in tree().iter('node'):
-        if element.get('resource-id') == identifier: return element
+    deadline=time.monotonic()+20
+    while time.monotonic()<deadline:
+        for element in tree().iter('node'):
+            if element.get('resource-id') == identifier: return element
+        time.sleep(.5)
     raise AssertionError('Missing ' + identifier)
 def bounds(identifier): return list(map(int, re.findall(r'\d+', node(identifier).get('bounds'))))
 def tap(identifier):

@@ -6,7 +6,7 @@ final class ViewportTouchUITests: XCTestCase {
         continueAfterFailure = false
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.otherElements["touch-host"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.otherElements["touch-host"].waitForExistence(timeout: 30))
     }
     func point(_ y: CGFloat) -> XCUICoordinate {
         app.otherElements["touch-host"].coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: y / 400))

@@ -167,3 +167,23 @@ Here `screenHeight` is RN `Dimensions.get('screen').height`, updated on screen-s
 - [Android MP4](https://github.com/gazai-io/react-native-gradient-mask/releases/download/v0.2.3/viewport-android.mp4) · [Android GIF](https://raw.githubusercontent.com/gazai-io/react-native-gradient-mask/v0.2.3/images/viewport-android.gif)
 
 MP4s are real simulator recordings. GIFs use a 360px width and 12 fps with a 128-color palette to reduce download size; they are visual demonstrations, not an FPS or physical-device performance result. iOS recording uses `DemoRecordingUITests` with `simctl io recordVideo`; Android uses `adb shell screenrecord` and the visible controls.
+
+## Touch pass-through and wrapper Views
+
+`restrictTouchesToVisibleArea` excludes new touches from the native mask outside its visible interval. It does not change ancestors' hit testing. An ordinary `View` wrapping the mask may still become the touch target and block a button behind the entire wrapper. Use `pointerEvents="box-none"` on noninteractive wrapper Views that must let rejected touches reach siblings behind them. Do not use `pointerEvents="none"` on the mask: that would also disable visible children and scrolling. Feathered pixels are still inside the interactive interval.
+
+```tsx
+<View style={{flex: 1}}>
+  <Pressable style={StyleSheet.absoluteFill} onPress={onBackgroundPress} />
+  <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
+    <AnimatedViewportMaskView style={StyleSheet.absoluteFill}
+      top={top} bottom={bottom} restrictTouchesToVisibleArea>
+      {list}
+    </AnimatedViewportMaskView>
+  </View>
+</View>
+```
+
+The normal Chat viewport keeps its existing layout and adds only one button behind the list. Press **Top 50% screen** to reveal it, then switch **Touch range: all** to **Touch range: visible**. Tapping the exposed button now increases its own count; with restriction disabled, the hidden list still receives that touch. This is an actual background Pressable, not a synthesized mask callback.
+
+The opt-in `touch` validation scene additionally compares `Wrapper: auto` and `Wrapper: box-none` against a Pressable behind the entire container, with upper/lower bounds, feathers, dynamic percentages, and existing drags. The normal Example does not add a test tab or test controls.
