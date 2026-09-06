@@ -26,7 +26,9 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
   const containerRef = useRef<View>(null);
   const containerScreenY = useSharedValue(0);
   const measureContainer = useCallback((after?: () => void) => {
-    containerRef.current?.measureInWindow((_x, y) => {
+    // This Example fills the screen. pageY is relative to that root;
+    // measureInWindow adds a separate Android viewport/status-bar offset.
+    containerRef.current?.measure((_x, _y, _width, _height, _pageX, y) => {
       containerScreenY.value = y;
       after?.();
     });

@@ -119,3 +119,13 @@ See [validation and outstanding requirements](validation/viewport-checklist.md) 
 Both boundaries are measured downward from the **container origin**. With an 800-unit screen, `top="50%"` in screen mode requests local y=400, then clamps to the actual container. It does not measure the container's screen position or automatically align to the physical screen midpoint. To align an absolute screen line, the App passes `screenLineY - containerScreenY` as a numeric coordinate. `bottom={40}` is y=40, not a 40-unit inset; use `bottom={containerHeight - 40}` for that inset.
 
 The Chat viewport `%: container/screen` toggle now changes both percentage boundaries and feathers. Press `Top 0 ↔ 50%` to animate the top boundary using the selected reference; `Bottom 100% ↔ 75%` changes the percentage bottom coordinate. `Bottom panel` returns to an App-calculated numeric bottom coordinate. Reference lines show the clamped position. The old README videos have not been re-recorded.
+
+### Example screen-line correction
+
+In Chat viewport, `Top 50% screen` now aligns the visible boundary to the actual screen midpoint. The Example measures its container relative to its full-screen React root and passes `screenHeight * 0.5 - containerScreenY` as a **numeric local coordinate**. The screen-mode bottom percentage similarly subtracts the container origin. The same resulting coordinates drive the mask, touch restriction, and reference lines. This fixes the previous Example behavior that placed the line at container origin plus half the screen height.
+
+The package's `percentageReference="screen"` remains a length reference; it does not infer absolute screen positions. Apps with an embedded React root must include that root's screen offset when performing this conversion. In this full-screen Example, `measure().pageY` avoids the Android window/status-bar offset of `measureInWindow()`. Measurements occur on button actions, container layout and screen-size changes, not on every animation frame.
+
+Position regression: run the default Example and `tests/android/screen_origin.py`, or run XCTest with `-only-testing:GradientMaskUITests/ScreenBoundaryUITests`. Run the older touch scene with `-only-testing:GradientMaskUITests/ViewportTouchUITests`.
+
+Verified on iOS 26.5 (screen 956 RN units: top y=478, bottom y=717) and Android API 35 (screenshot height 2400px: top line y=1200.5, bottom line y=1800.5). Both retained the original container frame. Evidence: [iOS](validation/artifacts/screen-origin/ios-top-midpoint.png), [Android](validation/artifacts/screen-origin/android-top-midpoint.png). Physical-device performance has not been measured for this Example change.

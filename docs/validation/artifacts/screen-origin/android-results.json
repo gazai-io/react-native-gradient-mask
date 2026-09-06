@@ -1,0 +1,7 @@
+{
+  "topPixelY": 1200.5,
+  "expectedTop": 1200.0,
+  "bottomPixelY": 1800.5,
+  "expectedBottom": 1800.0,
+  "containerUnchanged": true
+}
