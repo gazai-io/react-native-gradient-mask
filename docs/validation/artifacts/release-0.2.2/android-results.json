@@ -1,0 +1,116 @@
+[
+  {
+    "case": "default hidden row remains interactive",
+    "actual": {
+      "content": 1,
+      "background": 0,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "restricted top passes to background",
+    "actual": {
+      "content": 1,
+      "background": 1,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "restricted bottom passes to background",
+    "actual": {
+      "content": 1,
+      "background": 2,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "feather remains interactive",
+    "actual": {
+      "content": 2,
+      "background": 2,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "shared boundary update affects hit test",
+    "actual": {
+      "content": 2,
+      "background": 3,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "disabled mask bypasses restriction",
+    "actual": {
+      "content": 3,
+      "background": 3,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "restriction can be disabled again",
+    "actual": {
+      "content": 4,
+      "background": 3,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "outside drag start rejected",
+    "actual": {
+      "content": 0,
+      "background": 1,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "inside drag continues outside",
+    "actual": {
+      "content": 0,
+      "background": 1,
+      "offset": 200
+    },
+    "pass": true
+  },
+  {
+    "case": "container percentage boundaries gate both ends",
+    "actual": {
+      "content": 1,
+      "background": 1,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "screen percentage boundaries gate both ends",
+    "actual": {
+      "content": 2,
+      "background": 2,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "boundary reference overrides common screen setting",
+    "actual": {
+      "content": 3,
+      "background": 3,
+      "offset": 0
+    },
+    "pass": true
+  },
+  {
+    "case": "screen reference changes percentage, fixed container",
+    "containerPixel": 255,
+    "screenPixel": 95,
+    "pass": true
+  }
+]

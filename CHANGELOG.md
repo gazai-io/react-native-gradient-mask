@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+- Accept px, percentage and ratio lengths for viewport top/bottom boundaries, including animated shared values.
+- Apply percentageReference to both boundaries and feathers; optional boundaryPercentageReference independently overrides boundaries. Numeric coordinates retain their local-container meaning.
+- Resolve native container ratios consistently for alpha masks and touch bounds without changing child layout.
+- Update Chat viewport top and bottom percentage controls to follow the selected reference.
+
 ## 0.2.1
 
 - Pin publishing npm to 11.6.2 for Node 24.13.0 compatibility. The 0.2.0 workflow failed before publication because npm 12 requires a newer Node runtime.
