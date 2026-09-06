@@ -91,6 +91,7 @@ export default function ViewportChatExample({automatic = false}: {automatic?: bo
     <AnimatedInput editable={false} style={styles.info} animatedProps={info} />
     <View style={styles.controls}>
       <Button text="Top 0 ↔ 50%" action={toggleTop}/><Button text="Bottom panel" action={togglePanel}/>
+      <Button text="Top 50% screen" action={() => {setPercentageReference('screen'); mid.current = true; topOverride.value = null; topProgress.value = withTiming(1, {duration: 800});}}/>
       <Button text="Bottom 100% ↔ 75%" action={() => {bottomMid.current = !bottomMid.current; if (bottomRatio.value === null) { const base = percentageReference === 'screen' ? screenHeight : height.value; bottomRatio.value = base > 0 ? (height.value - panel.value) / base : 0; } bottomRatio.value = withTiming(bottomMid.current ? .75 : 1, {duration: 700});}}/>
       <Button text={streaming ? 'Stop typing' : 'Type characters'} action={() => setStreaming(!streaming)}/>
       <Button text="Append" action={append}/><Button text="Prepend" action={prepend}/>
