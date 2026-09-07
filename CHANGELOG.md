@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.5
+
+- Fix stale native state on recycled views. Fabric recycles views by component name and
+  `ExpoViewProps::propsMap` replays only the props an element sends, so a prop a wrapper omitted
+  kept the value left by the previous occupant of that view. A `GradientMaskView` mounted into a
+  view recycled from a `ViewportMaskView` inherited `boundaryMode`, `restrictTouchesToVisibleArea`
+  and the previous visible interval, silently clipping its content and rejecting touches outside
+  a range it never declared; a viewport mask recycled the other way feathered with the previous
+  element's gradient colors. Every wrapper now sends the whole native prop surface on every render.
+- Add regression coverage that parses both native modules, so a new `Prop(...)` that no wrapper
+  sends fails the test suite instead of shipping.
+- Add a native-stack example scene that exercises the iOS left-edge back gesture over a
+  full-screen mask and forces a view recycle between viewport and gradient screens; the
+  procedure and its environment traps are recorded in
+  `docs/validation/native-stack-edge-swipe.md`.
+
 ## 0.2.4
 
 - Document background touch pass-through and `pointerEvents="box-none"` for non-interactive ancestor wrappers.

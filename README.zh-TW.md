@@ -337,8 +337,8 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 ## Example 驗證環境
 
 主要 Example 已對齊 App：Expo 56.0.17 / React Native 0.85.3。
-重現步驟見[升級與驗證紀錄](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/expo-56-upgrade.md)，
-原版結果見 [Expo 54 建置基準](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/expo-54-baseline.md)。環境升級與功能修改分開記錄。
+重現步驟見[升級與驗證紀錄](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/expo-56-upgrade.md)，
+原版結果見 [Expo 54 建置基準](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/expo-54-baseline.md)。環境升級與功能修改分開記錄。
 
 ## 贊助
 
@@ -364,17 +364,21 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 
 ## Native chat viewport mask
 
-See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/viewport-checklist.md).
+See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/viewport-checklist.md).
 
 ### 0.2.0：可選觸控範圍與螢幕百分比
 
 `restrictTouchesToVisibleArea` 預設 `false`；開啟後只允許在可視範圍內開始新觸控，已開始的拖曳移出範圍仍會繼續，羽化區可操作。
 `percentageReference` 預設 `"container"`，可設為 `"screen"` 讓百分比／ratio 邊界與羽化使用 RN 螢幕高度。`top`／`bottom` 也接受 `"50%"`，原點仍是容器頂端；數值／px 不變。可選 `boundaryPercentageReference` 僅覆寫邊界基準，不填就共用 `percentageReference`。
 
-詳見 [API 與範例](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md)及 [0.2.0 驗證](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/release-0.2.0.md)。
+詳見 [API 與範例](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/viewport-mask.md)及 [0.2.0 驗證](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/release-0.2.0.md)。
 
-螢幕中線需扣掉容器位置；Example 已完成換算。容器背景設為透明後，隱藏與羽化區域會透出後方頁面。詳見 [座標換算與透明背景](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo)。
+螢幕中線需扣掉容器位置；Example 已完成換算。容器背景設為透明後，隱藏與羽化區域會透出後方頁面。詳見 [座標換算與透明背景](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo)。
 
 ### 背景點擊穿透（0.2.4）
 
-啟用 `restrictTouchesToVisibleArea={true}`，並將不需接收觸控的祖先容器設為 `pointerEvents="box-none"`，可讓可視範圍外的點擊傳至後方兄弟元件。Chat viewport 先按 `Top 50% screen`，再將「背景穿透：關」切為「背景穿透：開」，即可點擊後方按鈕。詳見[整合與雙平台驗證紀錄](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/pass-through-retest.md)。
+啟用 `restrictTouchesToVisibleArea={true}`，並將不需接收觸控的祖先容器設為 `pointerEvents="box-none"`，可讓可視範圍外的點擊傳至後方兄弟元件。Chat viewport 先按 `Top 50% screen`，再將「背景穿透：關」切為「背景穿透：開」，即可點擊後方按鈕。詳見[整合與雙平台驗證紀錄](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/pass-through-retest.md)。
+
+### Navigation stack 與 view recycling（0.2.5）
+
+遮罩不會擋掉 iOS 左緣返回手勢 —— 該手勢的 recognizer 掛在 navigation controller 的 view 上，是遮罩的祖先，而拒收觸控是穿透而非吞掉。真正會弄壞畫面的是 Fabric 在 viewport 遮罩與 gradient 遮罩之間回收原生 view：每個 wrapper 只送自己的 prop，回收後的 view 便保留前一個元素的邊界、觸控限制與漸層狀態。現在每個 wrapper 都會送出完整的原生 prop 面。詳見[native stack 與回收驗證紀錄](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/native-stack-edge-swipe.md)。

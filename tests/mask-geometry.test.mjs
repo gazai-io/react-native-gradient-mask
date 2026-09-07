@@ -78,7 +78,7 @@ test('gradient defaults, single colors and invalid stops are safe and determinis
 import { readFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 const source = stripTypeScriptTypes(readFileSync(new URL('../src/viewportMaskProps.ts', import.meta.url), 'utf8')).replace("'./maskGeometry'", JSON.stringify(new URL('../src/maskGeometry.ts', import.meta.url).href));
-const { viewportMaskProps } = await import('data:text/javascript,' + encodeURIComponent(source));
+const { viewportGradientProps, viewportMaskProps } = await import('data:text/javascript,' + encodeURIComponent(source));
 test('viewport opt-in preserves coordinates independently from mixed-unit feathers', () => {
   const p = viewportMaskProps({top: 400 * .5, bottom: 360, topFeather: '50%', bottomFeather: '40px'});
   assert.equal(p.boundaryMode, true);
@@ -139,4 +139,48 @@ test('boundary percentages share the reference, with an independent optional ove
   assert.equal(inverse.visibleTop, 500);
   assert.equal(inverse.topHeightRatio, true);
   assert.equal(viewportMaskProps({top: '40px', bottom: 350, percentageReference: 'screen'}, 800).visibleTop, 40);
+});
+
+// Fabric recycles native views by component name and ExpoViewProps::propsMap replays only the
+// props an element actually sends, so any prop a wrapper omits keeps the value left behind by
+// the previous occupant of that view. Parse the native modules so this cannot drift.
+const nativePropNames = file => {
+  const source = readFileSync(new URL(file, import.meta.url), 'utf8');
+  return [...source.matchAll(/Prop\("([^"]+)"\)/g)].map(match => match[1]);
+};
+
+test('ios and android register the same native prop surface', () => {
+  assert.deepEqual(
+    nativePropNames('../ios/GradientMaskModule.swift').sort(),
+    nativePropNames('../android/src/main/java/expo/modules/gradientmask/GradientMaskModule.kt').sort());
+});
+
+test('every wrapper sends the whole native prop surface, so a recycled view keeps no stale state', () => {
+  const surface = nativePropNames('../ios/GradientMaskModule.swift');
+  const gradient = new Set([...Object.keys(nativeMaskProps({})), 'colors', 'locations', 'maskDirection']);
+  const viewport = new Set([...Object.keys(viewportMaskProps({ top: 0, bottom: 0 })), ...Object.keys(viewportGradientProps)]);
+  for (const name of surface) {
+    assert.ok(gradient.has(name), `gradient wrappers never send ${name}`);
+    assert.ok(viewport.has(name), `viewport wrappers never send ${name}`);
+  }
+});
+
+test('a gradient element resets the boundary and touch state a viewport element may have left', () => {
+  const stale = viewportMaskProps({ top: 100, bottom: 500, restrictTouchesToVisibleArea: true });
+  assert.equal(stale.boundaryMode, true);
+  assert.equal(stale.restrictTouchesToVisibleArea, true);
+  const fresh = nativeMaskProps({ topMaskHeight: 40 });
+  assert.equal(fresh.boundaryMode, false);
+  assert.equal(fresh.restrictTouchesToVisibleArea, false);
+  assert.equal(fresh.visibleTop, 0);
+  assert.equal(fresh.visibleBottom, 0);
+  assert.equal(fresh.visibleTopRatio, false);
+  assert.equal(fresh.visibleBottomRatio, false);
+});
+
+test('a viewport element resets the gradient profile a custom gradient element may have left', () => {
+  assert.deepEqual(viewportGradientProps.colors, normalizeGradient().colors);
+  assert.deepEqual(viewportGradientProps.locations, normalizeGradient().locations);
+  assert.equal(viewportGradientProps.maskDirection, 'top');
+  assert.notDeepEqual(viewportGradientProps.colors, normalizeGradient([0xff0000ff, 0x00000000]).colors);
 });

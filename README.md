@@ -325,8 +325,8 @@ maskOpacity.value = withTiming(newValue, { duration: 300 });
 ## Example validation
 
 The primary example environment matches the app: Expo 56.0.17 / React Native 0.85.3.
-See the [upgrade and validation record](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/expo-56-upgrade.md) and the
-[original Expo 54 build baseline](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/expo-54-baseline.md) (Traditional Chinese).
+See the [upgrade and validation record](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/expo-56-upgrade.md) and the
+[original Expo 54 build baseline](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/expo-54-baseline.md) (Traditional Chinese).
 Environment upgrades and functional changes are recorded separately.
 
 ## Built for Anini
@@ -365,7 +365,7 @@ MIT © [DaYuan Lin (CS6)](https://github.com/CS6)
 
 ## Native chat viewport mask
 
-See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/viewport-checklist.md).
+See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/viewport-mask.md) and [validation checklist](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/viewport-checklist.md).
 
 ### Optional touch range and screen percentages (0.2.0)
 
@@ -383,10 +383,14 @@ See [opt-in viewport API, coordinate rules and Example](https://github.com/gazai
 Defaults: `percentageReference="container"`, `restrictTouchesToVisibleArea={false}`.
 Screen percentages use RN screen height for both boundaries and feathers. `top` / `bottom` accept MaskLength (including percentages), measured from the container origin. Numbers/px are unchanged. Optional `boundaryPercentageReference` overrides only boundaries; otherwise they inherit `percentageReference`.
 Touch restriction checks new gesture starts only; an active drag continues outside the visible interval.
-See [0.2.0 validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/release-0.2.0.md).
+See [0.2.0 validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/release-0.2.0.md).
 
-For absolute screen lines, subtract the container position (as the Example does). A transparent container reveals the page behind the mask. See [screen conversion and transparent backgrounds](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo).
+For absolute screen lines, subtract the container position (as the Example does). A transparent container reveals the page behind the mask. See [screen conversion and transparent backgrounds](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/viewport-mask.md#transparent-backgrounds-and-the-023-demo).
 
 ### Background touch pass-through (0.2.4)
 
-Set `restrictTouchesToVisibleArea={true}` and use `pointerEvents="box-none"` on non-interactive ancestor wrappers so touches outside the visible interval can reach a background sibling. In Chat viewport, press `Top 50% screen`, then switch `背景穿透：關` to `背景穿透：開` and tap the background button. See [integration and native test results](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.4/docs/validation/pass-through-retest.md).
+Set `restrictTouchesToVisibleArea={true}` and use `pointerEvents="box-none"` on non-interactive ancestor wrappers so touches outside the visible interval can reach a background sibling. In Chat viewport, press `Top 50% screen`, then switch `背景穿透：關` to `背景穿透：開` and tap the background button. See [integration and native test results](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/pass-through-retest.md).
+
+### Navigation stacks and view recycling (0.2.5)
+
+The mask does not block the iOS left-edge back gesture: that recognizer belongs to the navigation controller's view, an ancestor of the mask, and rejecting a touch passes it through rather than swallowing it. What did break screens was Fabric recycling a native view between a viewport mask and a gradient mask, because each wrapper only sent its own props and the recycled view kept the previous element's boundary, touch-restriction and gradient state. Every wrapper now sends the whole native prop surface. See [native stack and recycling validation](https://github.com/gazai-io/react-native-gradient-mask/blob/v0.2.5/docs/validation/native-stack-edge-swipe.md) (Traditional Chinese).

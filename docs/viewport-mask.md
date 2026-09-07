@@ -168,6 +168,31 @@ Here `screenHeight` is RN `Dimensions.get('screen').height`, updated on screen-s
 
 MP4s are real simulator recordings. GIFs use a 360px width and 12 fps with a 128-color palette to reduce download size; they are visual demonstrations, not an FPS or physical-device performance result. iOS recording uses `DemoRecordingUITests` with `simctl io recordVideo`; Android uses `adb shell screenrecord` and the visible controls.
 
+## Navigation stacks and view recycling
+
+The mask does not interfere with the iOS left-edge back gesture. `UIScreenEdgePanGestureRecognizer`
+belongs to the navigation controller's view, an ancestor of the mask, and UIKit delivers a touch to
+the gesture recognizers of the hit view *and all of its ancestors*. Rejecting a touch returns `nil`
+from `hitTest`, which makes UIKit continue to the views behind rather than swallowing the sequence,
+so the resulting hit view is still a descendant of the navigation controller.
+
+What did break screens was recycled native views. Fabric pools views by component name, and
+`ExpoViewProps::propsMap` replays only the props an element actually sends. A prop a wrapper omits
+is never handed to its native setter, so a recycled view keeps the previous occupant's value. Both
+directions leaked before this was fixed: a gradient mask mounted into a view recycled from a
+viewport mask inherited `boundaryMode`, `restrictTouchesToVisibleArea` and the previous visible
+interval, clipping its content and rejecting touches outside a range it never declared; a viewport
+mask recycled the other way feathered with the previous element's gradient colors.
+
+Every wrapper now emits the whole native prop surface on every render, and `tests/mask-geometry.test.mjs`
+parses both native modules so a new `Prop(...)` that no wrapper sends fails the suite. Custom
+wrappers that talk to the native component directly must do the same.
+
+The `native-stack` validation scene (`EXPO_PUBLIC_MASK_VALIDATION=native-stack`, or the **Native stack**
+tab) covers both: swipe from the left edge with the restriction on and off, and use **Replace with
+gradient** to unmount a viewport mask and mount a gradient mask in the same commit, which is when the
+native view is handed over.
+
 ## Touch pass-through and wrapper Views
 
 `restrictTouchesToVisibleArea` excludes new touches from the native mask outside its visible interval. It does not change ancestors' hit testing. An ordinary `View` wrapping the mask may still become the touch target and block a button behind the entire wrapper. Use `pointerEvents="box-none"` on noninteractive wrapper Views that must let rejected touches reach siblings behind them. Do not use `pointerEvents="none"` on the mask: that would also disable visible children and scrolling. Feathered pixels are still inside the interactive interval.

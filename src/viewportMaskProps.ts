@@ -1,5 +1,13 @@
 import type { ViewportMaskViewProps } from './GradientMask.types';
-import { referencedMaskLength } from './maskGeometry';
+import { normalizeGradient, referencedMaskLength } from './maskGeometry';
+
+/**
+ * Viewport mode feathers with the default transparent-to-opaque profile and never reads
+ * `maskDirection`. They are still sent on every render: Fabric recycles native views by
+ * component name and replays only the props an element sends, so a prop this wrapper omits
+ * keeps the value left behind by the gradient wrapper that used the view before.
+ */
+export const viewportGradientProps = { ...normalizeGradient(), maskDirection: 'top' as const };
 
 export function viewportMaskProps(props: Pick<ViewportMaskViewProps,
   'top' | 'bottom' | 'topFeather' | 'bottomFeather' | 'enabled' | 'restrictTouchesToVisibleArea' | 'percentageReference' | 'boundaryPercentageReference'>, screenHeight = 0) {

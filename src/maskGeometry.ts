@@ -60,6 +60,14 @@ export function nativeMaskProps(props: Pick<GradientMaskViewProps,
   const top = referencedMaskLength(props.topMaskHeight, props.percentageReference, screenHeight);
   const bottom = referencedMaskLength(props.bottomMaskHeight, props.percentageReference, screenHeight);
   return {
+    // Fabric recycles native views by component name and replays only the props this element
+    // sends (ExpoViewProps::propsMap merges raw props into the previous map of the same element).
+    // Every wrapper must emit the whole native surface, otherwise a recycled view keeps the
+    // boundary and touch state of whatever rendered into it before.
+    boundaryMode: false,
+    restrictTouchesToVisibleArea: false,
+    visibleTop: 0, visibleTopRatio: false,
+    visibleBottom: 0, visibleBottomRatio: false,
     edgeMode: props.topMaskHeight !== undefined || props.bottomMaskHeight !== undefined,
     topHeight: props.topMaskEnabled === false ? 0 : top.value,
     topHeightRatio: top.isRatio,
